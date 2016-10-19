@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
     TextView Latitude;
     TextView Longitude;
     TextView Speed;
+    LocationListener listener;
      //endregion
 
     @Override
@@ -37,29 +38,36 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
 
+        listener =  new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                Latitude.setText(String.valueOf(location.getLatitude()));
+                Longitude.setText(String.valueOf(location.getLongitude()));
+                Speed.setText(String.valueOf(location.getSpeed()));
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+            }
+        };
+
         //region GPS
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
-                new LocationListener() {
-                    @Override
-                    public void onLocationChanged(Location location) {
-                        Latitude.setText(String.valueOf(location.getLatitude()));
-                        Longitude.setText(String.valueOf(location.getLongitude()));
-                        Speed.setText(String.valueOf(location.getSpeed()));
-                    }
-
-                    @Override
-                    public void onStatusChanged(String provider, int status, Bundle extras) {
-                    }
-
-                    @Override
-                    public void onProviderEnabled(String provider) {
-                    }
-
-                    @Override
-                    public void onProviderDisabled(String provider) {
-                    }
-                });
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,listener);
         //endregion
+
+    }
+
+    public void onStop(){
+        super.onStop();
+        locationManager.removeUpdates(listener);
     }
 }
