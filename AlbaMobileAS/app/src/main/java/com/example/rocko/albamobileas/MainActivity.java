@@ -13,8 +13,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -24,7 +22,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView Latitude;
     TextView Longitude;
     TextView Speed;
-    LocationListener listener;
+    LocationListener GPSListener;
     //endregion
 
     //region 加速度計用オブジェクト
@@ -39,10 +37,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView GyroY;
     TextView GyroZ;
     SensorManager gyroSensor;
-    //endregion
-
-    //region 温度計用オブジェクト
-    TextView temp;
     //endregion
 
     @Override
@@ -66,17 +60,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //endregion
 
         //region ジャイロセンサ用オブジェクト
-        GyroX = (TextView)findViewById(R.id.textViewGyroX);
-        GyroY = (TextView)findViewById(R.id.textViewGyroY);
-        GyroZ = (TextView)findViewById(R.id.textViewGyroZ);
-        //endregion
-
-        //region 温度用オブジェクト
-        temp = (TextView)findViewById(R.id.textViewTemperature);
+        GyroX = (TextView) findViewById(R.id.textViewGyroX);
+        GyroY = (TextView) findViewById(R.id.textViewGyroY);
+        GyroZ = (TextView) findViewById(R.id.textViewGyroZ);
         //endregion
 
     }
-
 
     @Override
     protected void onResume() {
@@ -90,10 +79,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //endregion
 
         //region ジャイロ
-        gyroSensor = (SensorManager)getSystemService(SENSOR_SERVICE);
+        gyroSensor = (SensorManager) getSystemService(SENSOR_SERVICE);
         List<Sensor> gyroSensors = acceSensor.getSensorList(Sensor.TYPE_GYROSCOPE);
-        if(gyroSensors.size() > 0){
-            gyroSensor.registerListener(this,gyroSensors.get(0),SensorManager.SENSOR_DELAY_UI);
+        if (gyroSensors.size() > 0) {
+            gyroSensor.registerListener(this, gyroSensors.get(0), SensorManager.SENSOR_DELAY_UI);
         }
         //endregion
 
@@ -119,14 +108,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        AcceX.setText(String.valueOf(event.values[0]));
-        AcceY.setText(String.valueOf(event.values[1]));
-        AcceZ.setText(String.valueOf(event.values[2]));
-
-        GyroX.setText(String.valueOf(event.values[0]));
-        GyroY.setText(String.valueOf(event.values[1]));
-        GyroZ.setText(String.valueOf(event.values[2]));
-
+        switch (event.sensor.getType()) {
+            case Sensor.TYPE_ACCELEROMETER:
+                AcceX.setText(String.valueOf(event.values[0]));
+                AcceY.setText(String.valueOf(event.values[1]));
+                AcceZ.setText(String.valueOf(event.values[2]));
+                break;
+            case Sensor.TYPE_GYROSCOPE:
+                GyroX.setText(String.valueOf(event.values[0]));
+                GyroY.setText(String.valueOf(event.values[1]));
+                GyroZ.setText(String.valueOf(event.values[2]));
+                break;
+        }
     }
 //endregion
 
@@ -135,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onStart() {
         super.onStart();
 
-        listener = new LocationListener() {
+        GPSListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 Latitude.setText(String.valueOf(location.getLatitude()));
@@ -158,13 +151,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, GPSListener);
 
     }
 
     public void onStop() {
         super.onStop();
-        locationManager.removeUpdates(listener);
+        locationManager.removeUpdates(GPSListener);
     }
     //endregion
 

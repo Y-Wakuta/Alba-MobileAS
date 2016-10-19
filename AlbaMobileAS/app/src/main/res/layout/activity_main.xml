@@ -3,9 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginTop="10dp"
-    android:orientation="vertical"
     android:background="#000000"
+    android:orientation="vertical"
     android:padding="10dp">
+
     <TextView
         android:id="@+id/textViewLatitude"
         android:layout_width="match_parent"
@@ -17,6 +18,7 @@
         android:textColor="#FFFFFF"
         android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewLongitude"
         android:layout_width="wrap_content"
@@ -26,11 +28,12 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="Longitude"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="17dp"
-        android:textColor="#FFFFFF"
         android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewSpeed"
         android:layout_width="wrap_content"
@@ -40,11 +43,12 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="Speed"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="17dp"
-        android:textColor="#FFFFFF"
         android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewGPSCondition"
         android:layout_width="wrap_content"
@@ -54,11 +58,12 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="GPSCondition"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="12dp"
-        android:textColor="#FFFF4444"
         android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFF4444"
+        android:textSize="12dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewAccelermeterX"
         android:layout_width="wrap_content"
@@ -68,11 +73,12 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="AccelermeterX"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="17dp"
-        android:textColor="#FFFFFF"
         android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewAccelermeterY"
         android:layout_width="wrap_content"
@@ -82,11 +88,12 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="AccelermeterY"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="17dp"
-        android:textColor="#FFFFFF"
         android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewAccelermeterZ"
         android:layout_width="wrap_content"
@@ -96,11 +103,12 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="AccelermeterZ"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="17dp"
-        android:textColor="#FFFFFF"
         android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewGyroX"
         android:layout_width="wrap_content"
@@ -110,11 +118,12 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="GyroscopeX"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="17dp"
-        android:textColor="#FFFFFF"
         android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewGyroY"
         android:layout_width="wrap_content"
@@ -124,37 +133,24 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="GyroscopeY"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="17dp"
-        android:textColor="#FFFFFF"
         android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:textSize="17dp"
         android:textStyle="bold" />
     <TextView
-    android:id="@+id/textViewGyroZ"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:layout_marginBottom="3dp"
-    android:ellipsize="end"
-    android:maxLines="2"
-    android:text="GyroscopeZ"
-    android:textAppearance="?android:attr/textAppearanceMedium"
-    android:textSize="17dp"
-    android:textColor="#FFFFFF"
-    android:textAllCaps="true"
-    android:textStyle="bold" />
-    <TextView
-        android:id="@+id/textViewTemperature"
+        android:id="@+id/textViewGyroZ"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="3dp"
         android:ellipsize="end"
         android:maxLines="2"
-        android:text="Temperature"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="17dp"
-        android:textColor="#FFFFFF"
+        android:text="GyroscopeZ"
         android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:textSize="17dp"
         android:textStyle="bold" />
+
 </LinearLayout>
