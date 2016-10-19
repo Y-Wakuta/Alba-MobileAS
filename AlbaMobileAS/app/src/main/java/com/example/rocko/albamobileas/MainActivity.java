@@ -1,7 +1,7 @@
 package com.example.rocko.albamobileas;
 
 import android.content.Context;
-import android.content.res.Resources;
+import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -16,7 +16,6 @@ import android.widget.TextView;
 import org.w3c.dom.Text;
 
 import java.util.List;
-import java.util.logging.Handler;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -32,27 +31,82 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView AcceX;
     TextView AcceY;
     TextView AcceZ;
-    SensorManager sensor;
+    SensorManager acceSensor;
     //endregion
 
-    //region 加速度計
+    //region ジャイロ用オブジェクト
+    TextView GyroX;
+    TextView GyroY;
+    TextView GyroZ;
+    SensorManager gyroSensor;
+    //endregion
+
+    //region 温度計用オブジェクト
+    TextView temp;
+    //endregion
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        //画面の向きを立て向きに固定
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        //region GPS用オブジェクト
+        Latitude = (TextView) findViewById(R.id.textViewLatitude);
+        Longitude = (TextView) findViewById(R.id.textViewLongitude);
+        Speed = (TextView) findViewById(R.id.textViewSpeed);
+        //endregion
+
+        //region 加速度計用オブジェクト
+        AcceX = (TextView) findViewById(R.id.textViewAccelermeterX);
+        AcceY = (TextView) findViewById(R.id.textViewAccelermeterY);
+        AcceZ = (TextView) findViewById(R.id.textViewAccelermeterZ);
+        //endregion
+
+        //region ジャイロセンサ用オブジェクト
+        GyroX = (TextView)findViewById(R.id.textViewGyroX);
+        GyroY = (TextView)findViewById(R.id.textViewGyroY);
+        GyroZ = (TextView)findViewById(R.id.textViewGyroZ);
+        //endregion
+
+        //region 温度用オブジェクト
+        temp = (TextView)findViewById(R.id.textViewTemperature);
+        //endregion
+
+    }
+
+
     @Override
     protected void onResume() {
         super.onResume();
-
-        sensor = (SensorManager) getSystemService(SENSOR_SERVICE);
-        List<Sensor> sensors = sensor.getSensorList(Sensor.TYPE_ACCELEROMETER);
-        if (0 < sensors.size()) {
-            sensor.registerListener(this, sensors.get(0), SensorManager.SENSOR_DELAY_NORMAL);
+        //region 加速計用
+        acceSensor = (SensorManager) getSystemService(SENSOR_SERVICE);
+        List<Sensor> acceSensors = acceSensor.getSensorList(Sensor.TYPE_ACCELEROMETER);
+        if (0 < acceSensors.size()) {
+            acceSensor.registerListener(this, acceSensors.get(0), SensorManager.SENSOR_DELAY_NORMAL);
         }
+        //endregion
+
+        //region ジャイロ
+        gyroSensor = (SensorManager)getSystemService(SENSOR_SERVICE);
+        List<Sensor> gyroSensors = acceSensor.getSensorList(Sensor.TYPE_GYROSCOPE);
+        if(gyroSensors.size() > 0){
+            gyroSensor.registerListener(this,gyroSensors.get(0),SensorManager.SENSOR_DELAY_UI);
+        }
+        //endregion
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        sensor.unregisterListener(this);
+        acceSensor.unregisterListener(this);
+        gyroSensor.unregisterListener(this);
     }
 
+    //region 加速度計
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -68,27 +122,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         AcceX.setText(String.valueOf(event.values[0]));
         AcceY.setText(String.valueOf(event.values[1]));
         AcceZ.setText(String.valueOf(event.values[2]));
+
+        GyroX.setText(String.valueOf(event.values[0]));
+        GyroY.setText(String.valueOf(event.values[1]));
+        GyroZ.setText(String.valueOf(event.values[2]));
+
     }
 //endregion
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        //region GPS用オブジェクト
-        Latitude = (TextView) findViewById(R.id.textViewLatitude);
-        Longitude = (TextView) findViewById(R.id.textViewLongitude);
-        Speed = (TextView) findViewById(R.id.textViewSpeed);
-        //endregion
-
-        //region 加速度計用オブジェクト
-        AcceX = (TextView) findViewById(R.id.textViewAccelermeterX);
-        AcceY = (TextView) findViewById(R.id.textViewAccelermeterY);
-        AcceZ = (TextView) findViewById(R.id.textViewAccelermeterZ);
-        //endregion
-
-    }
 
     //region GPS
     @Override
