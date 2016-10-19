@@ -39,6 +39,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     SensorManager gyroSensor;
     //endregion
 
+    //region 気圧計用オブジェクト
+    TextView press;
+    SensorManager pressSensor;
+    //endregion
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +70,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         GyroZ = (TextView) findViewById(R.id.textViewGyroZ);
         //endregion
 
+        //region 気圧計用オブジェクト
+        press = (TextView)findViewById(R.id.textViewPressure);
+        //endregion
+
     }
 
     @Override
@@ -80,12 +89,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         //region ジャイロ
         gyroSensor = (SensorManager) getSystemService(SENSOR_SERVICE);
-        List<Sensor> gyroSensors = acceSensor.getSensorList(Sensor.TYPE_GYROSCOPE);
+        List<Sensor> gyroSensors = gyroSensor.getSensorList(Sensor.TYPE_GYROSCOPE);
         if (gyroSensors.size() > 0) {
             gyroSensor.registerListener(this, gyroSensors.get(0), SensorManager.SENSOR_DELAY_UI);
         }
         //endregion
 
+        //region 気圧計
+        pressSensor = (SensorManager)getSystemService(SENSOR_SERVICE);
+        List<Sensor> pressSensors = pressSensor.getSensorList(Sensor.TYPE_PRESSURE);
+        if(0< pressSensors.size()){
+            pressSensor.registerListener(this,pressSensors.get(0),SensorManager.SENSOR_DELAY_UI);
+        }
+        //endregion
     }
 
     @Override
@@ -93,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onPause();
         acceSensor.unregisterListener(this);
         gyroSensor.unregisterListener(this);
+        pressSensor.unregisterListener(this);
     }
 
     //region 加速度計
@@ -119,6 +136,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 GyroY.setText(String.valueOf(event.values[1]));
                 GyroZ.setText(String.valueOf(event.values[2]));
                 break;
+            case Sensor.TYPE_PRESSURE:
+                press.setText(String.valueOf(event.values[0]));
         }
     }
 //endregion

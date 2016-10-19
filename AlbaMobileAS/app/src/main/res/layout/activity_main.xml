@@ -152,5 +152,18 @@
         android:textColor="#FFFFFF"
         android:textSize="17dp"
         android:textStyle="bold" />
-
+    <TextView
+        android:id="@+id/textViewPressure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="3dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:text="Pressure"
+        android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:textSize="17dp"
+        android:textStyle="bold" />
 </LinearLayout>
