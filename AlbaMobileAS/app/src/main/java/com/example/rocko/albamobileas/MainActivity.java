@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView Latitude;
     TextView Longitude;
     TextView Speed;
+    TextView Accuracy;
     LocationListener GPSListener;
     //endregion
 
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Latitude = (TextView) findViewById(R.id.textViewLatitude);
         Longitude = (TextView) findViewById(R.id.textViewLongitude);
         Speed = (TextView) findViewById(R.id.textViewSpeed);
+        Accuracy = (TextView)findViewById(R.id.textViewAccuracy);
         //endregion
 
         //region 加速度計用オブジェクト
@@ -153,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Latitude.setText(String.valueOf(location.getLatitude()));
                 Longitude.setText(String.valueOf(location.getLongitude()));
                 Speed.setText(String.valueOf(location.getSpeed()));
+                Accuracy.setText(String.valueOf(location.getAccuracy()));
             }
 
             @Override
