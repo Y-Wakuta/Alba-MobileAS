@@ -3,6 +3,7 @@ package com.example.rocko.albamobileas;
 import android.content.Context;
 import android.content.res.Resources;
 import android.hardware.Sensor;
+import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import org.w3c.dom.Text;
 
 import java.util.List;
+import java.util.logging.Handler;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -33,16 +35,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     SensorManager sensor;
     //endregion
 
+    //region 加速度計
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
 
-        sensor = (SensorManager)getSystemService(SENSOR_SERVICE);
+        sensor = (SensorManager) getSystemService(SENSOR_SERVICE);
         List<Sensor> sensors = sensor.getSensorList(Sensor.TYPE_ACCELEROMETER);
-        if(0<sensors.size()){
-            sensor.registerListener(this,sensors.get(0),SensorManager.SENSOR_DELAY_NORMAL);
+        if (0 < sensors.size()) {
+            sensor.registerListener(this, sensors.get(0), SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensor.unregisterListener(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        AcceX.setText(String.valueOf(event.values[0]));
+        AcceY.setText(String.valueOf(event.values[1]));
+        AcceZ.setText(String.valueOf(event.values[2]));
+    }
+//endregion
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,10 +81,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Longitude = (TextView) findViewById(R.id.textViewLongitude);
         Speed = (TextView) findViewById(R.id.textViewSpeed);
         //endregion
+
+        //region 加速度計用オブジェクト
+        AcceX = (TextView) findViewById(R.id.textViewAccelermeterX);
+        AcceY = (TextView) findViewById(R.id.textViewAccelermeterY);
+        AcceZ = (TextView) findViewById(R.id.textViewAccelermeterZ);
+        //endregion
+
     }
 
+    //region GPS
     @Override
-
     public void onStart() {
         super.onStart();
 
@@ -82,10 +116,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         };
 
-        //region GPS
+
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
-        //endregion
 
     }
 
@@ -93,4 +126,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onStop();
         locationManager.removeUpdates(listener);
     }
+    //endregion
+
 }
