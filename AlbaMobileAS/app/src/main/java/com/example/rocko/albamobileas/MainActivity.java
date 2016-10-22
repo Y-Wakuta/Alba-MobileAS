@@ -1,6 +1,10 @@
 package com.example.rocko.albamobileas;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -9,11 +13,20 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
+import android.os.Handler;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -45,6 +58,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     SensorManager pressSensor;
     //endregion
 
+    //region Bluetooth用オブジェクト
+    private static final String TAG = "AlbaMobile";
+
+    private BluetoothAdapter _blueAdapter = BluetoothAdapter.getDefaultAdapter();
+
+    private BluetoothDevice _blueDevice;
+
+    private final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+    private final String DEVICE_NAME = "HC-05";
+
+    private BluetoothSocket _blueSocket;
+
+    private Thread _blueThread;
+
+    private boolean isRunning;
+
+    private TextView BlueStatus;
+
+    TextView AirSpeed;
+
+    private static final int VIEW_STATUS = 1;
+
+    private static final int VIEW_INPUT = 1;
+
+    private boolean connectFlg = false;
+
+    OutputStream mmOutputStream = null;
+
+
+    //endregion
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Latitude = (TextView) findViewById(R.id.textViewLatitude);
         Longitude = (TextView) findViewById(R.id.textViewLongitude);
         Speed = (TextView) findViewById(R.id.textViewSpeed);
-        Accuracy = (TextView)findViewById(R.id.textViewAccuracy);
+        Accuracy = (TextView) findViewById(R.id.textViewAccuracy);
         //endregion
 
         //region 加速度計用オブジェクト
@@ -73,10 +118,120 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //endregion
 
         //region 気圧計用オブジェクト
-        press = (TextView)findViewById(R.id.textViewPressure);
+        press = (TextView) findViewById(R.id.textViewPressure);
         //endregion
 
+        //region Bluetooth用オブジェクト
+        AirSpeed = (TextView) findViewById(R.id.textViewAirSpeed);
+        BlueStatus = (TextView) findViewById(R.id.textViewBlueStatus);
+        //endregion
+
+        //region Bluetooth準備
+        _blueAdapter = BluetoothAdapter.getDefaultAdapter();
+        BlueStatus.setText("Searching Device.");
+        Set<BluetoothDevice> devices = _blueAdapter.getBondedDevices();
+        for (BluetoothDevice device : devices) {
+            if (device.getName().equals(DEVICE_NAME)) {
+                BlueStatus.setText("find:" + device.getName());
+                _blueDevice = device;
+            }
+        }
+
+        //region Bluetooth接続処理
+        if (!connectFlg) {
+            BlueStatus.setText("Try connect.");
+            //Threadを起動
+            _blueThread = new Thread() {
+                @Override
+                public void run() {
+                    InputStream mmInStream = null;
+
+                    Message valueMsg = new Message();
+                    valueMsg.what = VIEW_STATUS;
+                    valueMsg.obj = "connecting...";
+                    blueHandler.sendMessage(valueMsg);
+
+                    try {
+                        _blueSocket = _blueDevice.createRfcommSocketToServiceRecord(MY_UUID);
+                        _blueSocket.connect();
+                        mmInStream = _blueSocket.getInputStream();
+                        mmOutputStream = _blueSocket.getOutputStream();
+
+                        byte[] buffer = new byte[1024];
+
+                        int bytes;
+                        valueMsg = new Message();
+                        valueMsg.what = VIEW_STATUS;
+                        valueMsg.obj = "connected.";
+                        blueHandler.sendMessage(valueMsg);
+
+                        connectFlg = true;
+
+                        while (isRunning) {
+                            //inPutStreamの読み込み
+                            bytes = mmInStream.read(buffer);
+                            Log.i(TAG, "bytes=" + bytes);
+                            String readMsg = new String(buffer, 0, bytes);
+
+                            if (readMsg.trim() != null && !readMsg.trim().equals("")) {
+                                Log.i(TAG, "value= " + readMsg.trim());
+                                valueMsg = new Message();
+                                valueMsg.what = VIEW_INPUT;
+                                valueMsg.obj = readMsg;
+                                blueHandler.sendMessage(valueMsg);
+                            } else {
+
+                            }
+                        }
+                    } catch (Exception exc) {
+                        valueMsg = new Message();
+                        valueMsg.what = VIEW_STATUS;
+                        valueMsg.obj = "ERROR1:" + exc;
+                        blueHandler.sendMessage(valueMsg);
+                        try {
+                            _blueSocket.close();
+                        } catch (Exception e) {
+                            isRunning = false;
+                            connectFlg = false;
+                        }
+                    }
+                }
+            };
+
+            isRunning = true;
+            _blueThread.start();
+        }
+        if (connectFlg) {
+            try {
+                mmOutputStream.write("2".getBytes());
+                BlueStatus.setText("Write");
+            } catch (IOException e) {
+                Message valueMsg = new Message();
+                valueMsg.what = VIEW_STATUS;
+                valueMsg.obj = "Errror3:" + e;
+                blueHandler.sendMessage(valueMsg);
+            }
+        } else {
+        }
+
+
+        //endregion
+
+        //endregion
     }
+
+    Handler blueHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            int action = msg.what;
+            String msgStr = (String) msg.obj;
+            if (action == VIEW_INPUT) {
+                AirSpeed.setText(msgStr);
+            } else if (action == VIEW_STATUS) {
+                BlueStatus.setText(msgStr);
+            }
+        }
+    };
 
     @Override
     protected void onResume() {
@@ -98,10 +253,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //endregion
 
         //region 気圧計
-        pressSensor = (SensorManager)getSystemService(SENSOR_SERVICE);
+        pressSensor = (SensorManager) getSystemService(SENSOR_SERVICE);
         List<Sensor> pressSensors = pressSensor.getSensorList(Sensor.TYPE_PRESSURE);
-        if(0< pressSensors.size()){
-            pressSensor.registerListener(this,pressSensors.get(0),SensorManager.SENSOR_DELAY_UI);
+        if (0 < pressSensors.size()) {
+            pressSensor.registerListener(this, pressSensors.get(0), SensorManager.SENSOR_DELAY_UI);
         }
         //endregion
     }
@@ -112,7 +267,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         acceSensor.unregisterListener(this);
         gyroSensor.unregisterListener(this);
         pressSensor.unregisterListener(this);
+
+        //region Bluetooth用処理
+        isRunning = false;
+        try {
+            _blueSocket.close();
+        } catch (Exception exc) {
+        }
+        //endregion
     }
+
 
     //region 加速度計
     @Override

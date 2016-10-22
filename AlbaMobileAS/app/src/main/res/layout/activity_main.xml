@@ -6,6 +6,7 @@
     android:background="#000000"
     android:orientation="vertical"
     android:padding="10dp">
+
     <TextView
         android:id="@+id/textViewGPSCondition"
         android:layout_width="wrap_content"
@@ -20,6 +21,7 @@
         android:textColor="#FFFF4444"
         android:textSize="15dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewLatitude"
         android:layout_width="match_parent"
@@ -61,6 +63,7 @@
         android:textColor="#FFFFFF"
         android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewAccuracy"
         android:layout_width="wrap_content"
@@ -75,6 +78,7 @@
         android:textColor="#FFFFFF"
         android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewAccelermeter"
         android:layout_width="wrap_content"
@@ -89,6 +93,7 @@
         android:textColor="#FFFF4444"
         android:textSize="15dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewAccelermeterX"
         android:layout_width="wrap_content"
@@ -133,6 +138,7 @@
         android:textColor="#FFFFFF"
         android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewGyroScope"
         android:layout_width="wrap_content"
@@ -147,6 +153,7 @@
         android:textColor="#FFFF4444"
         android:textSize="15dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewGyroX"
         android:layout_width="wrap_content"
@@ -176,6 +183,7 @@
         android:textColor="#FFFFFF"
         android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewGyroZ"
         android:layout_width="wrap_content"
@@ -190,6 +198,7 @@
         android:textColor="#FFFFFF"
         android:textSize="17dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewPress"
         android:layout_width="wrap_content"
@@ -204,6 +213,7 @@
         android:textColor="#FFFF4444"
         android:textSize="15dp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewPressure"
         android:layout_width="wrap_content"
@@ -213,6 +223,34 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="Pressure"
+        android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:textSize="17dp"
+        android:textStyle="bold" />
+    <TextView
+        android:id="@+id/textViewBlueStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="3dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:text="BlueStatus"
+        android:textAllCaps="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#a0a0ff"
+        android:textSize="17dp"
+        android:textStyle="bold" />
+    <TextView
+        android:id="@+id/textViewAirSpeed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="3dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:text="AirSpeed"
         android:textAllCaps="true"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="#FFFFFF"
