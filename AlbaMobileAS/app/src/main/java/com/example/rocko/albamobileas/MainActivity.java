@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.os.Handler;
 
@@ -28,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, View.OnClickListener {
 
     //region GPS用オブジェクト
     private LocationManager locationManager;
@@ -59,6 +60,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //endregion
 
     //region Bluetooth用オブジェクト
+
+    Button connect;
+
     private static final String TAG = "AlbaMobile";
 
     private BluetoothAdapter _blueAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -79,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     TextView AirSpeed;
 
-    private static final int VIEW_STATUS = 1;
+    private static final int VIEW_STATUS = 0;
 
     private static final int VIEW_INPUT = 1;
 
@@ -95,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //画面の向きを立て向きに固定
+        //画面の向きを縦向きに固定
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         //region GPS用オブジェクト
@@ -124,9 +128,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //region Bluetooth用オブジェクト
         AirSpeed = (TextView) findViewById(R.id.textViewAirSpeed);
         BlueStatus = (TextView) findViewById(R.id.textViewBlueStatus);
+
+        AirSpeed.setText("");
+        BlueStatus.setText("");
         //endregion
 
         //region Bluetooth準備
+        connect = (Button) findViewById(R.id.connectButton);
+
+        AirSpeed.setAllCaps(false);
         _blueAdapter = BluetoothAdapter.getDefaultAdapter();
         BlueStatus.setText("Searching Device.");
         Set<BluetoothDevice> devices = _blueAdapter.getBondedDevices();
@@ -137,101 +147,96 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
 
-        //region Bluetooth接続処理
-        if (!connectFlg) {
-            BlueStatus.setText("Try connect.");
-            //Threadを起動
-            _blueThread = new Thread() {
-                @Override
-                public void run() {
-                    InputStream mmInStream = null;
-
-                    Message valueMsg = new Message();
-                    valueMsg.what = VIEW_STATUS;
-                    valueMsg.obj = "connecting...";
-                    blueHandler.sendMessage(valueMsg);
-
-                    try {
-                        _blueSocket = _blueDevice.createRfcommSocketToServiceRecord(MY_UUID);
-                        _blueSocket.connect();
-                        mmInStream = _blueSocket.getInputStream();
-                        mmOutputStream = _blueSocket.getOutputStream();
-
-                        byte[] buffer = new byte[1024];
-
-                        int bytes;
-                        valueMsg = new Message();
-                        valueMsg.what = VIEW_STATUS;
-                        valueMsg.obj = "connected.";
-                        blueHandler.sendMessage(valueMsg);
-
-                        connectFlg = true;
-
-                        while (isRunning) {
-                            //inPutStreamの読み込み
-                            bytes = mmInStream.read(buffer);
-                            Log.i(TAG, "bytes=" + bytes);
-                            String readMsg = new String(buffer, 0, bytes);
-
-                            if (readMsg.trim() != null && !readMsg.trim().equals("")) {
-                                Log.i(TAG, "value= " + readMsg.trim());
-                                valueMsg = new Message();
-                                valueMsg.what = VIEW_INPUT;
-                                valueMsg.obj = readMsg;
-                                blueHandler.sendMessage(valueMsg);
-                            } else {
-
-                            }
-                        }
-                    } catch (Exception exc) {
-                        valueMsg = new Message();
-                        valueMsg.what = VIEW_STATUS;
-                        valueMsg.obj = "ERROR1:" + exc;
-                        blueHandler.sendMessage(valueMsg);
-                        try {
-                            _blueSocket.close();
-                        } catch (Exception e) {
-                            isRunning = false;
-                            connectFlg = false;
-                        }
-                    }
-                }
-            };
-
-            isRunning = true;
-            _blueThread.start();
-        }
-        if (connectFlg) {
-            try {
-                mmOutputStream.write("2".getBytes());
-                BlueStatus.setText("Write");
-            } catch (IOException e) {
-                Message valueMsg = new Message();
-                valueMsg.what = VIEW_STATUS;
-                valueMsg.obj = "Errror3:" + e;
-                blueHandler.sendMessage(valueMsg);
-            }
-        } else {
-        }
-
-
-        //endregion
-
+        connect.setOnClickListener(this);
         //endregion
     }
 
     Handler blueHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
+            AirSpeed.clearComposingText();
             int action = msg.what;
             String msgStr = (String) msg.obj;
             if (action == VIEW_INPUT) {
-                AirSpeed.setText(msgStr);
+                AirSpeed.setText(String.valueOf(msgStr));
             } else if (action == VIEW_STATUS) {
                 BlueStatus.setText(msgStr);
             }
         }
     };
+
+
+    @Override
+    public void onClick(View v) {
+        if (v.equals(connect)) {
+            if (!connectFlg) {
+                BlueStatus.setText("Try connect.");
+                //Threadを起動
+                _blueThread = new Thread() {
+                    @Override
+                    public void run() {
+                        InputStream mmInStream = null;
+
+                        Message valueMsg = new Message();
+                        valueMsg.what = VIEW_STATUS;
+                        valueMsg.obj = "connecting...";
+                        blueHandler.sendMessage(valueMsg);
+
+                        try {
+                            _blueSocket = _blueDevice.createRfcommSocketToServiceRecord(MY_UUID);
+                            _blueSocket.connect();
+                            mmInStream = _blueSocket.getInputStream();
+                            mmOutputStream = _blueSocket.getOutputStream();
+
+                            byte[] buffer = new byte[1024];
+
+                            int bytes;
+                            valueMsg = new Message();
+                            valueMsg.what = VIEW_STATUS;
+                            valueMsg.obj = "connected.";
+                            blueHandler.sendMessage(valueMsg);
+
+                            connectFlg = true;
+
+                            while (isRunning) {
+                                //inPutStreamの読み込み
+                                bytes = mmInStream.read(buffer);
+                                Log.i(TAG, "bytes=" + bytes);
+                                String readMsg = new String(buffer, 0, bytes);
+
+                                if (readMsg.trim() != null && !readMsg.trim().equals("")) {
+                                    Log.i(TAG, "value= " + readMsg.trim());
+                                    valueMsg = new Message();
+                                    valueMsg.what = VIEW_INPUT;
+                                    valueMsg.obj = readMsg;
+                                    blueHandler.sendMessage(valueMsg);
+                                } else {
+
+                                }
+                            }
+                        } catch (Exception exc) {
+                            valueMsg = new Message();
+                            valueMsg.what = VIEW_STATUS;
+                            valueMsg.obj = "ERROR1:" + exc;
+                            blueHandler.sendMessage(valueMsg);
+                            try {
+                                _blueSocket.close();
+                            } catch (Exception e) {
+                                isRunning = false;
+                                connectFlg = false;
+                            }
+                        }
+                    }
+                };
+
+                isRunning = true;
+                _blueThread.start();
+            }
+            if (connectFlg)
+                BlueStatus.setText("Already Connected.");
+        }
+        //endregion
+    }
 
     @Override
     protected void onResume() {
@@ -272,13 +277,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         isRunning = false;
         try {
             _blueSocket.close();
+            BlueStatus.setText("");
+            AirSpeed.setText("");
         } catch (Exception exc) {
         }
         //endregion
     }
 
 
-    //region 加速度計
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -292,21 +298,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
-            case Sensor.TYPE_ACCELEROMETER:
+            case Sensor.TYPE_ACCELEROMETER: //加速度計
                 AcceX.setText(String.valueOf(event.values[0]));
                 AcceY.setText(String.valueOf(event.values[1]));
                 AcceZ.setText(String.valueOf(event.values[2]));
                 break;
-            case Sensor.TYPE_GYROSCOPE:
+            case Sensor.TYPE_GYROSCOPE:  //Gyroセンサー
                 GyroX.setText(String.valueOf(event.values[0]));
                 GyroY.setText(String.valueOf(event.values[1]));
                 GyroZ.setText(String.valueOf(event.values[2]));
                 break;
-            case Sensor.TYPE_PRESSURE:
+            case Sensor.TYPE_PRESSURE:  //気圧計
                 press.setText(String.valueOf(event.values[0]));
         }
     }
-//endregion
 
     //region GPS
     @Override
