@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     //region Bluetooth用オブジェクト
 
+    String readMsg;
+
     Button connect;
 
     private static final String TAG = "AlbaMobile";
@@ -154,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Handler blueHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            AirSpeed.clearComposingText();
+            AirSpeed.setText("");
             int action = msg.what;
             String msgStr = (String) msg.obj;
             if (action == VIEW_INPUT) {
@@ -202,15 +204,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                 //inPutStreamの読み込み
                                 bytes = mmInStream.read(buffer);
                                 Log.i(TAG, "bytes=" + bytes);
-                                String readMsg = new String(buffer, 0, bytes);
-
+                                String tempReadMsg = new String(buffer, 0, bytes);
+                                readMsg += tempReadMsg;
                                 if (readMsg.trim() != null && !readMsg.trim().equals("")) {
                                     Log.i(TAG, "value= " + readMsg.trim());
-                                    valueMsg = new Message();
-                                    valueMsg.what = VIEW_INPUT;
-                                    valueMsg.obj = readMsg;
-                                    blueHandler.sendMessage(valueMsg);
-                                } else {
+                                    String[] msgline = readMsg.split("\n", 0);
+                                    if (msgline.length > 1) {
+                                        for (int i = 0; i < msgline.length; i++) {
+                                            String[] msgs = msgline[i].split(",", 0);
+                                            if (msgs.length == 3) {
+                                                valueMsg = new Message();
+                                                valueMsg.what = VIEW_INPUT;
+                                                valueMsg.obj = msgline[i];
+                                                blueHandler.sendMessage(valueMsg);
+                                            }
+                                        }
+                                        readMsg = "";
+                                    }
 
                                 }
                             }
