@@ -59,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     SensorManager pressSensor;
     //endregion
 
+    TextView Flight;
+
     //region Bluetooth用オブジェクト
 
     String readMsg;
@@ -135,6 +137,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         BlueStatus.setText("");
         //endregion
 
+        //region 画面遷移用オブジェクト
+        Flight = (TextView) findViewById(R.id.FlightButton);
+        //endregion
+
         //region Bluetooth準備
         connect = (Button) findViewById(R.id.connectButton);
 
@@ -150,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         connect.setOnClickListener(this);
+        Flight.setOnClickListener(this);
         //endregion
     }
 
@@ -166,7 +173,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
     };
-
 
     @Override
     public void onClick(View v) {
@@ -244,6 +250,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             if (connectFlg)
                 BlueStatus.setText("Already Connected.");
+        } else if (v.equals(Flight)) {
+            Intent intent = new Intent(MainActivity.this, FlightActivity.class);
+            startActivityForResult(intent, 0);
         }
         //endregion
     }

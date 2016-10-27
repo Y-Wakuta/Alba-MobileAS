@@ -261,4 +261,9 @@
         android:layout_height="wrap_content"
         android:background="#6e6eff"
         android:text="Connect" />
+    <Button android:id="@+id/FlightButton"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#6e6eff"
+        android:text="Go to Flight" />
 </LinearLayout>
