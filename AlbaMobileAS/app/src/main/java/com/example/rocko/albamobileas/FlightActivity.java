@@ -21,6 +21,8 @@ public class FlightActivity extends AppCompatActivity {
         setContentView(R.layout.activity_flight);
 
         MpuLeft = (ProgressBar)findViewById(R.id.MpuLeft);
+        MpuLeft.setMax(100);
+        MpuLeft.setMinimumHeight(0);
 
         DebugButton = (TextView) findViewById(R.id.DebugButton);
         DebugButton.setOnClickListener(new View.OnClickListener() {
@@ -35,6 +37,8 @@ public class FlightActivity extends AppCompatActivity {
             public void run() {
                 while(_progressBarStatus < 100){
                     _progressBarStatus++;
+                    if(_progressBarStatus == 100)
+                        _progressBarStatus = 0;
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -42,16 +46,15 @@ public class FlightActivity extends AppCompatActivity {
                         }
                     });
                     try {
-                        Thread.sleep(200);
+                        Thread.sleep(10);
                     }catch(Exception exc){
                     }
                 }
             }
         }).start();
-        MpuLeft.setMax(100);
+
         for(int i = 0;i < 100;i++)
             MpuLeft.setProgress(i);
-        MpuLeft.setSecondaryProgress(70);
     }
 
 
