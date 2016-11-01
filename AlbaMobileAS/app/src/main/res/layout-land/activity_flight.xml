@@ -13,7 +13,7 @@
 
     <ProgressBar
         android:id="@+id/MpuLeft"
-        style="@style/Widget.ProgressBar.Vertical"
+        style="@style/Widget.ProgressBar.VerticalBlue"
         android:layout_width="196dp"
         android:layout_height="330dip"
         android:layout_alignParentBottom="true"
@@ -27,8 +27,8 @@
         android:layout_alignParentStart="true">
 
         <ProgressBar
-            android:id="@+id/progressBar"
-            style="@style/Widget.ProgressBar.Vertical"
+            android:id="@+id/MpuRight"
+            style="@style/Widget.ProgressBar.VerticalRed"
             android:layout_width="196dp"
             android:layout_height="137dp"
             android:layout_alignParentTop="true"
@@ -36,17 +36,6 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
             />
-
-        <Button
-            android:id="@+id/DebugButton"
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:background="#1e90ff"
-            android:text="Back to Debug"
-            android:layout_gravity="right"
-            android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@+id/progressBar"
-            android:layout_toStartOf="@+id/progressBar" />
 
         <TextView
             android:id="@+id/textViewAirSpeed"
@@ -59,10 +48,20 @@
             android:textAllCaps="true"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#FFFFFF"
-            android:textSize="210dp"
             android:textStyle="bold"
             android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:textSize="240dp" />
+
+        <Button
+            android:id="@+id/DebugButton"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:background="#1e90ff"
+            android:text="Back to Debug"
+            android:layout_gravity="right"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@+id/MpuRight" />
 
     </RelativeLayout>
 

@@ -25,6 +25,7 @@ import android.os.Handler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -94,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean connectFlg = false;
 
     OutputStream mmOutputStream = null;
+
+    List<BluetoothEntities> _blueEntity = new ArrayList<BluetoothEntities>();
 
 
     //endregion
@@ -218,6 +221,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                     if (msgline.length > 1) {
                                         for (int i = 0; i < msgline.length; i++) {
                                             String[] msgs = msgline[i].split(",", 0);
+
+                                            BluetoothEntities _blue = new BluetoothEntities();
+                                            _blue.MpuRoll = Double.parseDouble(msgs[0]);
+                                            _blue.AirSpeed = Double.parseDouble(msgs[1]);
+                                            _blue.msg = msgs[2];
+                                            _blueEntity.add(_blue);
                                             if (msgs.length == 3) {
                                                 valueMsg = new Message();
                                                 valueMsg.what = VIEW_INPUT;
@@ -252,6 +261,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 BlueStatus.setText("Already Connected.");
         } else if (v.equals(Flight)) {
             Intent intent = new Intent(MainActivity.this, FlightActivity.class);
+           intent.putExtra("")
             startActivityForResult(intent, 0);
         }
         //endregion

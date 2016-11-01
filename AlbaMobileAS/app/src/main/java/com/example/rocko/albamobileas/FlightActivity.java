@@ -1,6 +1,5 @@
 package com.example.rocko.albamobileas;
 
-import android.content.pm.ActivityInfo;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,9 +11,16 @@ public class FlightActivity extends AppCompatActivity {
 
     TextView DebugButton;
     ProgressBar MpuLeft;
-    private int _progressBarStatus = 0;
+    ProgressBar MpuRight;
+    private int _progressBarStatusLeft = 0;
     private Handler handler = new Handler();
+    private BluetoothEntities blueEntity = new BluetoothEntities();
 
+    FlightActivity(BluetoothEntities be) {
+        blueEntity.AirSpeed = be.AirSpeed;
+        blueEntity.MpuRoll = be.MpuRoll;
+        blueEntity.msg = be.msg;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,6 +29,8 @@ public class FlightActivity extends AppCompatActivity {
         MpuLeft = (ProgressBar)findViewById(R.id.MpuLeft);
         MpuLeft.setMax(100);
         MpuLeft.setMinimumHeight(0);
+
+
 
         DebugButton = (TextView) findViewById(R.id.DebugButton);
         DebugButton.setOnClickListener(new View.OnClickListener() {
@@ -35,14 +43,14 @@ public class FlightActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while(_progressBarStatus < 100){
-                    _progressBarStatus++;
-                    if(_progressBarStatus == 100)
-                        _progressBarStatus = 0;
+                while(_progressBarStatusLeft < 100){
+                    _progressBarStatusLeft++;
+                    if(_progressBarStatusLeft == 100)
+                        _progressBarStatusLeft = 0;
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            MpuLeft.setProgress(_progressBarStatus);
+                            MpuLeft.setProgress(_progressBarStatusLeft);
                         }
                     });
                     try {
