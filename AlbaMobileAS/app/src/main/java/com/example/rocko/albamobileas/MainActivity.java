@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -19,6 +18,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.os.Handler;
 
@@ -30,7 +30,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener, View.OnClickListener {
+import android.app.Activity;
+
+public class MainActivity extends Activity implements SensorEventListener, View.OnClickListener {
+
+    TextView DebugButton;
+    ProgressBar MpuLeft;
+    ProgressBar MpuRight;
+    private int _progressBarStatusLeft = 0;
+    private Handler handler = new Handler();
+    private BluetoothEntities blueEntity = new BluetoothEntities();
 
     //region GPS用オブジェクト
     private LocationManager locationManager;
@@ -104,10 +113,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        startMainScreen();
+    }
 
-        //画面の向きを縦向きに固定
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    protected void startMainScreen() {
+
+        setContentView(R.layout.activity_main);
 
         //region GPS用オブジェクト
         Latitude = (TextView) findViewById(R.id.textViewLatitude);
@@ -260,9 +271,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (connectFlg)
                 BlueStatus.setText("Already Connected.");
         } else if (v.equals(Flight)) {
-            Intent intent = new Intent(MainActivity.this, FlightActivity.class);
-           intent.putExtra("")
-            startActivityForResult(intent, 0);
+            setFlightScreen();
         }
         //endregion
     }
@@ -381,4 +390,47 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
     //endregion
 
+
+    private void setFlightScreen() {
+        setContentView(R.layout.activity_flight);
+
+        MpuLeft = (ProgressBar) findViewById(R.id.MpuLeft);
+        MpuLeft.setMax(100);
+        MpuLeft.setMinimumHeight(0);
+
+
+        DebugButton = (TextView) findViewById(R.id.DebugButton);
+        DebugButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startMainScreen();
+            }
+        });
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (_progressBarStatusLeft < 100) {
+                    _progressBarStatusLeft++;
+                    if (_progressBarStatusLeft == 100)
+                        _progressBarStatusLeft = 0;
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            MpuLeft.setProgress(_progressBarStatusLeft);
+                        }
+                    });
+                    try {
+                        Thread.sleep(10);
+                    } catch (Exception exc) {
+                    }
+                }
+            }
+        }).start();
+
+        for (int i = 0; i < 100; i++)
+            MpuLeft.setProgress(i);
+    }
+
 }
+
