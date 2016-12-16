@@ -4,266 +4,277 @@
     android:layout_height="match_parent"
     android:layout_marginTop="10dp"
     android:background="#000000"
-    android:orientation="vertical"
-    android:padding="10dp">
+    android:orientation="horizontal"
+    android:padding="10dp"
+    android:weightSum="1">
 
-    <TextView
-        android:id="@+id/textViewGPSCondition"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="GPS"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFF4444"
-        android:textSize="15dp"
-        android:textStyle="bold" />
+        android:layout_weight="0.42">
 
-    <TextView
-        android:id="@+id/textViewLatitude"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="3dp"
-        android:gravity="center_horizontal"
-        android:text="Latitude"
-        android:textAllCaps="true"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewGyroScope"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="GyroScope"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFF4444"
+            android:textSize="15dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewLongitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="Longitude"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewGyroX"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="GyroscopeX"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewSpeed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="Speed"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewGyroY"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="GyroscopeY"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewAccuracy"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="Accuracy"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewGyroZ"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="GyroscopeZ"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewAccelermeter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="Accelemeter"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFF4444"
-        android:textSize="15dp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewPress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Pressure"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFF4444"
+            android:textSize="15dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewAccelermeterX"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="AccelermeterX"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewPressure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Pressure"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewBlueStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="3"
+            android:text="BlueStatus"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#a0a0ff"
+            android:textSize="17dp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewAirSpeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="3"
+            android:text="AirSpeed"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewAccelermeterY"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="AccelermeterY"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
+    </LinearLayout>
 
-    <TextView
-        android:id="@+id/textViewAccelermeterZ"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="AccelermeterZ"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:orientation="vertical"
+        android:layout_gravity="left"
+        android:padding="10dp"
+        android:layout_weight="0.33">
+        <TextView
+            android:id="@+id/textViewGPSCondition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="GPS"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFF4444"
+            android:textSize="15dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewGyroScope"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="GyroScope"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFF4444"
-        android:textSize="15dp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewLatitude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:text="Latitude"
+            android:textAllCaps="true"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewGyroX"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="GyroscopeX"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewLongitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Longitude"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewSpeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Speed"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewGyroY"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="GyroscopeY"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewAccuracy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Accuracy"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewGyroZ"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="GyroscopeZ"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewAccelermeter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Accelemeter"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFF4444"
+            android:textSize="15dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewPress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="Pressure"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFF4444"
-        android:textSize="15dp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textViewAccelermeterX"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="AccelermeterX"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textViewPressure"
+        <TextView
+            android:id="@+id/textViewAccelermeterY"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="AccelermeterY"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textViewAccelermeterZ"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="AccelermeterZ"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textSize="17dp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="Pressure"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
-    <TextView
-        android:id="@+id/textViewBlueStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="3"
-        android:text="BlueStatus"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#a0a0ff"
-        android:textSize="17dp"
-        android:textStyle="bold" />
-    <TextView
-        android:id="@+id/textViewAirSpeed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="3dp"
-        android:ellipsize="end"
-        android:maxLines="3"
-        android:text="AirSpeed"
-        android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#FFFFFF"
-        android:textSize="17dp"
-        android:textStyle="bold" />
-    <Button android:id="@+id/connectButton"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#6e6eff"
-        android:text="Connect" />
-    <Button android:id="@+id/FlightButton"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#6e6eff"
-        android:text="Go to Flight" />
+        android:layout_height="match_parent"
+        android:layout_gravity="fill"
+        android:orientation="vertical">
+        <Button android:id="@+id/connectButton"
+            android:layout_width="100dp"
+            android:layout_height="116dp"
+            android:background="#6e6eff"
+            android:text="Connect" />
+        <Button android:id="@+id/FlightButton"
+            android:layout_width="match_parent"
+            android:layout_height="99dp"
+            android:layout_marginTop="10dp"
+            android:background="#6e6eff"
+            android:text="Go to Flight" />
+    </LinearLayout>
+
 </LinearLayout>
