@@ -5,6 +5,6 @@ package com.example.rocko.albamobileas;
  */
 
 public class Constants {
-    double MpuDefault = 180;
-    double MpuMoveDeg = 0.3;
+   public double MpuDefault = 180.0;
+   public double MpuMoveDeg = 0.3;
 }

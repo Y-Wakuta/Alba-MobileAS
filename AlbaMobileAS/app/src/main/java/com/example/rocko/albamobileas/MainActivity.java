@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,7 +12,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -22,7 +20,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.os.Handler;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -34,12 +31,16 @@ import android.app.Activity;
 
 public class MainActivity extends Activity implements SensorEventListener, View.OnClickListener {
 
+    private double _progressBarStatusLeft = 0;
+    private double _progressBarStatusRight = 0;
     TextView DebugButton;
     ProgressBar MpuLeft;
     ProgressBar MpuRight;
-    private int _progressBarStatusLeft = 0;
+    TextView FlightAirSpeed;
+    double flightAirSpeed = 0.0;
     private Handler handler = new Handler();
-    private BluetoothEntities blueEntity = new BluetoothEntities();
+    BluetoothEntities _blue = new BluetoothEntities();
+    Constants constants = new Constants();
 
     //region GPS用オブジェクト
     private LocationManager locationManager;
@@ -107,7 +108,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     List<BluetoothEntities> _blueEntity = new ArrayList<BluetoothEntities>();
 
-
     //endregion
 
     @Override
@@ -131,7 +131,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         AcceX = (TextView) findViewById(R.id.textViewAccelermeterX);
         AcceY = (TextView) findViewById(R.id.textViewAccelermeterY);
         AcceZ = (TextView) findViewById(R.id.textViewAccelermeterZ);
-        //endregion
+        //endregionh
 
         //region ジャイロセンサ用オブジェクト
         GyroX = (TextView) findViewById(R.id.textViewGyroX);
@@ -233,12 +233,14 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                         for (int i = 0; i < msgline.length; i++) {
                                             String[] msgs = msgline[i].split(",", 0);
 
-                                            BluetoothEntities _blue = new BluetoothEntities();
-                                            _blue.MpuRoll = Double.parseDouble(msgs[0]);
-                                            _blue.AirSpeed = Double.parseDouble(msgs[1]);
-                                            _blue.msg = msgs[2];
-                                            _blueEntity.add(_blue);
                                             if (msgs.length == 3) {
+                                                _blue.MpuRoll = Double.parseDouble(msgs[0]);
+                                                _blue.AirSpeed = Double.parseDouble(msgs[1]);
+                                                _blue.msg = msgs[2];
+                                                _blueEntity.add(_blue);
+
+                                                SetFlightScreen(msgs);
+
                                                 valueMsg = new Message();
                                                 valueMsg.what = VIEW_INPUT;
                                                 valueMsg.obj = msgline[i];
@@ -247,7 +249,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                         }
                                         readMsg = "";
                                     }
-
                                 }
                             }
                         } catch (Exception exc) {
@@ -378,7 +379,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             }
         };
 
-
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, GPSListener);
 
@@ -388,16 +388,23 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         super.onStop();
         locationManager.removeUpdates(GPSListener);
     }
+
     //endregion
 
-
+    //region フライト中画面
     private void setFlightScreen() {
         setContentView(R.layout.activity_flight);
 
+        //region プログレスバーの設定
         MpuLeft = (ProgressBar) findViewById(R.id.MpuLeft);
         MpuLeft.setMax(100);
         MpuLeft.setMinimumHeight(0);
 
+        MpuRight = (ProgressBar) findViewById(R.id.MpuRight);
+        MpuRight.setMax(100);
+        MpuRight.setMinimumHeight(0);
+        //endregion
+        FlightAirSpeed = (TextView)findViewById(R.id.FlightAirSpeed);
 
         DebugButton = (TextView) findViewById(R.id.DebugButton);
         DebugButton.setOnClickListener(new View.OnClickListener() {
@@ -410,26 +417,38 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while (_progressBarStatusLeft < 100) {
-                    _progressBarStatusLeft++;
-                    if (_progressBarStatusLeft == 100)
-                        _progressBarStatusLeft = 0;
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            MpuLeft.setProgress(_progressBarStatusLeft);
-                        }
-                    });
-                    try {
-                        Thread.sleep(10);
-                    } catch (Exception exc) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        MpuLeft.setProgress((int)(_progressBarStatusLeft));
+                        MpuRight.setProgress((int)(_progressBarStatusRight));
+                        FlightAirSpeed.setText(String.valueOf(flightAirSpeed));
                     }
+                });
+                try {
+                    Thread.sleep(10);
+                } catch (Exception exc) {
                 }
             }
         }).start();
+    }
+    //endregion
 
-        for (int i = 0; i < 100; i++)
-            MpuLeft.setProgress(i);
+    //ロール用のprogressBarの値をセットします
+    void SetFlightScreen(String[] msgs){
+        double roll = Double.parseDouble(msgs[0]);
+        double airSpeed = Double.parseDouble(msgs[1]);
+        double cadence = Double.parseDouble(msgs[2]);
+        if(-constants.MpuMoveDeg < roll&& roll<0)
+            _progressBarStatusLeft = (-roll - constants.MpuDefault) * 100;
+        else if(roll< -constants.MpuMoveDeg)
+            _progressBarStatusLeft = 100;
+        else if(0 <=  roll&& roll< constants.MpuMoveDeg )
+            _progressBarStatusRight =  (roll - constants.MpuDefault) * 100;
+        else if(constants.MpuMoveDeg < roll)
+            _progressBarStatusRight = 100;
+
+        flightAirSpeed = airSpeed;
     }
 
 }
