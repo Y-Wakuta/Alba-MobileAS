@@ -7,4 +7,5 @@ public class BluetoothEntities{
     public double AirSpeed;
     public double MpuRoll;
     public String msg;
+    public double Cadence;
 }
