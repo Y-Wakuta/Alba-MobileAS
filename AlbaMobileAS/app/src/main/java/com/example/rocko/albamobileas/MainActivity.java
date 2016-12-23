@@ -24,9 +24,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     private double _progressBarStatusLeft = 0;
     private double _progressBarStatusRight = 0;
-    TextView DebugButton = (TextView) findViewById(R.id.DebugButton);
-    ProgressBar MpuLeft= (ProgressBar) findViewById(R.id.MpuLeft);
-    ProgressBar MpuRight= (ProgressBar) findViewById(R.id.MpuRight);;
+    TextView DebugButton;
+    ProgressBar MpuLeft;
+    ProgressBar MpuRight;
     TextView FlightAirSpeed;
     double flightAirSpeed = 0.0;
 
@@ -36,41 +36,43 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     //region GPS用オブジェクト
     private LocationManager locationManager;
-    TextView Latitude= (TextView) findViewById(R.id.textViewLatitude);
-    TextView Longitude= (TextView) findViewById(R.id.textViewLongitude);
-    TextView Speed= (TextView) findViewById(R.id.textViewSpeed);
-    TextView Accuracy= (TextView) findViewById(R.id.textViewAccuracy);
+    TextView Latitude;
+    TextView Longitude;
+    TextView Speed;
+    TextView Accuracy;
     LocationListener GPSListener;
     //endregion
 
     //region 加速度計用オブジェクト
-    TextView AcceX= (TextView) findViewById(R.id.textViewAccelermeterX);
-    TextView AcceY= (TextView) findViewById(R.id.textViewAccelermeterY);
-    TextView AcceZ= (TextView) findViewById(R.id.textViewAccelermeterZ);;
-    SensorManager acceSensor= (SensorManager) getSystemService(SENSOR_SERVICE);
+    TextView AcceX;
+    TextView AcceY;
+    TextView AcceZ;
+    SensorManager acceSensor;
     //endregion
 
     //region ジャイロ用オブジェクト
-    TextView GyroX= (TextView) findViewById(R.id.textViewGyroX);
-    TextView GyroY= (TextView) findViewById(R.id.textViewGyroY);
-    TextView GyroZ = (TextView) findViewById(R.id.textViewGyroZ);
-    SensorManager gyroSensor= (SensorManager) getSystemService(SENSOR_SERVICE);
+    TextView GyroX;
+    TextView GyroY;
+    TextView GyroZ;
+    SensorManager gyroSensor;
     //endregion
 
     //region 気圧計用オブジェクト
-    TextView press= (TextView) findViewById(R.id.textViewPressure);
-    SensorManager pressSensor= (SensorManager) getSystemService(SENSOR_SERVICE);
+    TextView press;
+    SensorManager pressSensor;
     //endregion
 
-    TextView Flight = (TextView) findViewById(R.id.FlightButton);;
+    TextView Flight;
 
     //region Bluetooth用オブジェクト
-    Button connect= (Button) findViewById(R.id.connectButton);;
 
-    public TextView BlueStatus= (TextView) findViewById(R.id.textViewBlueStatus);;
+    Button connect;
+
+    public TextView BlueStatus;
     BluetoothEntities _blue;
 
-    TextView AirSpeed = (TextView) findViewById(R.id.textViewAirSpeed);;
+
+    TextView AirSpeed;
 
     private boolean connectFlg = false;
 
@@ -93,13 +95,50 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
         setContentView(R.layout.activity_main);
 
+        //region GPS用オブジェクト
+        Latitude = (TextView) findViewById(R.id.textViewLatitude);
+        Longitude = (TextView) findViewById(R.id.textViewLongitude);
+        Speed = (TextView) findViewById(R.id.textViewSpeed);
+        Accuracy = (TextView) findViewById(R.id.textViewAccuracy);
+        //endregion
+
+        //region 加速度計用オブジェクト
+        AcceX = (TextView) findViewById(R.id.textViewAccelermeterX);
+        AcceY = (TextView) findViewById(R.id.textViewAccelermeterY);
+        AcceZ = (TextView) findViewById(R.id.textViewAccelermeterZ);
+        //endregion
+
+        //region ジャイロセンサ用オブジェクト
+        GyroX = (TextView) findViewById(R.id.textViewGyroX);
+        GyroY = (TextView) findViewById(R.id.textViewGyroY);
+        GyroZ = (TextView) findViewById(R.id.textViewGyroZ);
+        //endregion
+
+        //region 気圧計用オブジェクト
+        press = (TextView) findViewById(R.id.textViewPressure);
+        //endregion
+
+        //region Bluetooth用オブジェクト
+        AirSpeed = (TextView) findViewById(R.id.textViewAirSpeed);
+        BlueStatus = (TextView) findViewById(R.id.textViewBlueStatus);
+
         AirSpeed.setText("");
         BlueStatus.setText("");
+        //endregion
+
+        //region 画面遷移用オブジェクト
+        Flight = (TextView) findViewById(R.id.FlightButton);
+        //endregion
+
+        //region Bluetooth準備
+        connect = (Button) findViewById(R.id.connectButton);
 
         AirSpeed.setAllCaps(false);
 
+
         connect.setOnClickListener(this);
         Flight.setOnClickListener(this);
+        //endregion
     }
 
     @Override
@@ -140,6 +179,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     protected void onResume() {
         super.onResume();
         //region 加速計用
+        acceSensor = (SensorManager) getSystemService(SENSOR_SERVICE);
         List<Sensor> acceSensors = acceSensor.getSensorList(Sensor.TYPE_ACCELEROMETER);
         if (0 < acceSensors.size()) {
             acceSensor.registerListener(this, acceSensors.get(0), SensorManager.SENSOR_DELAY_NORMAL);
@@ -147,6 +187,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         //endregion
 
         //region ジャイロ
+        gyroSensor = (SensorManager) getSystemService(SENSOR_SERVICE);
         List<Sensor> gyroSensors = gyroSensor.getSensorList(Sensor.TYPE_GYROSCOPE);
         if (gyroSensors.size() > 0) {
             gyroSensor.registerListener(this, gyroSensors.get(0), SensorManager.SENSOR_DELAY_UI);
@@ -154,6 +195,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         //endregion
 
         //region 気圧計
+        pressSensor = (SensorManager) getSystemService(SENSOR_SERVICE);
         List<Sensor> pressSensors = pressSensor.getSensorList(Sensor.TYPE_PRESSURE);
         if (0 < pressSensors.size()) {
             pressSensor.registerListener(this, pressSensors.get(0), SensorManager.SENSOR_DELAY_UI);
@@ -250,14 +292,17 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         setContentView(R.layout.activity_flight);
 
         //region プログレスバーの設定
+        MpuLeft = (ProgressBar) findViewById(R.id.MpuLeft);
         MpuLeft.setMax(100);
         MpuLeft.setMinimumHeight(0);
 
+        MpuRight = (ProgressBar) findViewById(R.id.MpuRight);
         MpuRight.setMax(100);
         MpuRight.setMinimumHeight(0);
         //endregion
         FlightAirSpeed = (TextView)findViewById(R.id.FlightAirSpeed);
 
+        DebugButton = (TextView) findViewById(R.id.DebugButton);
         DebugButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -301,5 +346,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
         flightAirSpeed = airSpeed;
     }
+
 }
 
