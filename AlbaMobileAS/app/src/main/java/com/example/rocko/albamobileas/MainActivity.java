@@ -29,6 +29,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     ProgressBar MpuRight;
     TextView FlightAirSpeed;
     double flightAirSpeed = 0.0;
+
     private Handler handler = new Handler();
 
     Constants constants = new Constants();
