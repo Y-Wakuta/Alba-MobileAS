@@ -1,6 +1,8 @@
 package com.example.rocko.albamobileas;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -29,6 +31,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     ProgressBar MpuRight;
     TextView FlightAirSpeed;
     double flightAirSpeed = 0.0;
+
+    Routine routine = new Routine();
 
     private Handler handler = new Handler();
 
@@ -69,7 +73,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     Button connect;
 
     public TextView BlueStatus;
-    BluetoothEntities _blue;
+    BluetoothEntity _blue;
 
 
     TextView AirSpeed;
@@ -78,7 +82,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     private Thread _blueThread;
 
-    List<BluetoothEntities> _blueEntity = new ArrayList<BluetoothEntities>();
+    List<BluetoothEntity> _blueEntity = new ArrayList<BluetoothEntity>();
+    List<GPSEntity> GPSEntityList = new ArrayList<GPSEntity>();
+    GPSEntity GPSEntity =  new GPSEntity();
 
     public BlueTooth blueTooth = new BlueTooth();
     private boolean isRunning;
@@ -87,8 +93,16 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        String _sql = "";
+
         super.onCreate(savedInstanceState);
         startMainScreen();
+
+        SQLiteDB sqLiteDB = new SQLiteDB(this,routine.CreateSQL(_sql));
+
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+
+        db.close();
     }
 
     protected void startMainScreen() {
@@ -155,6 +169,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                             connectFlg = true;
                             while (isRunning) {
                                 _blue = blueTooth.Read();
+
+
                                 _blueEntity.add(_blue);
                                 SetFlight(_blue);
                             }
@@ -235,17 +251,24 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER: //加速度計
-                AcceX.setText(String.valueOf(event.values[0]));
-                AcceY.setText(String.valueOf(event.values[1]));
-                AcceZ.setText(String.valueOf(event.values[2]));
+                GPSEntity.AcceX = String.valueOf(event.values[0]);
+                AcceX.setText(GPSEntity.AcceX);
+                GPSEntity.AcceY = String.valueOf(event.values[1]);
+                AcceY.setText(GPSEntity.AcceY);
+                GPSEntity.AcceZ  =String.valueOf(event.values[2]);
+                AcceZ.setText(GPSEntity.AcceZ);
                 break;
             case Sensor.TYPE_GYROSCOPE:  //Gyroセンサー
-                GyroX.setText(String.valueOf(event.values[0]));
-                GyroY.setText(String.valueOf(event.values[1]));
-                GyroZ.setText(String.valueOf(event.values[2]));
+                GPSEntity.GyroX = String.valueOf(event.values[0]);
+                GyroX.setText(GPSEntity.GyroX);
+                GPSEntity.GyroY  =String.valueOf(event.values[1]);
+                GyroY.setText(GPSEntity.GyroY);
+                GPSEntity.GyroZ  =String.valueOf(event.values[2]);
+                GyroZ.setText(GPSEntity.GyroZ);
                 break;
             case Sensor.TYPE_PRESSURE:  //気圧計
-                press.setText(String.valueOf(event.values[0]));
+                GPSEntity.Pressure = String.valueOf(event.values[0]);
+                press.setText(GPSEntity.Pressure);
         }
     }
 
@@ -257,8 +280,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         GPSListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                Latitude.setText(String.valueOf(location.getLatitude()));
-                Longitude.setText(String.valueOf(location.getLongitude()));
+                GPSEntity.Latitude = String.valueOf(location.getLatitude());
+                Latitude.setText(GPSEntity.Latitude);
+                GPSEntity.Longitude = String.valueOf(location.getLongitude());
+                Longitude.setText(GPSEntity.Longitude);
                 Speed.setText(String.valueOf(location.getSpeed()));
                 Accuracy.setText(String.valueOf(location.getAccuracy()));
             }
@@ -331,7 +356,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     //endregion
 
     //ロール用のprogressBarの値をセットします
-    void SetFlight(BluetoothEntities bt){
+    void SetFlight(BluetoothEntity bt){
         double roll = bt.MpuRoll;
         double airSpeed = bt.AirSpeed;
         double cadence = bt.Cadence;
@@ -347,5 +372,91 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         flightAirSpeed = airSpeed;
     }
 
+    public long InsertGPS(GPSEntity FE) {
+        String _sql = "";
+        ContentValues values = new ContentValues();
+
+        values.put("Time",FE.Time);
+        values.put("Pressure",FE.Pressure);
+        values.put("Latitude",FE.Latitude);
+        values.put("Longitude",FE.Longitude);
+        values.put("Speed",FE.Speed);
+        values.put("Accuracy",FE.Accuracy);
+
+        SQLiteDB sqLiteDB = new SQLiteDB(this,routine.CreateSQL(_sql));
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+
+        long insertResult = 0;
+        try{
+            insertResult = db.insert("GPSTable",null,values);
+        }finally {
+            db.close();
+        }
+        return insertResult;
+    }
+
+    public long InsertAcce(AcceEntity AE){
+        String _sql = "";
+        ContentValues values = new ContentValues();
+
+        values.put("Time",AE.Time);
+        values.put("AcceX",AE.AcceX);
+        values.put("AcceY",AE.AcceY);
+        values.put("AcceZ",AE.AcceZ);
+
+        SQLiteDB sqLiteDB = new SQLiteDB(this,routine.CreateSQL(_sql));
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+
+        long insertResult = 0;
+        try{
+            insertResult = db.insert("AlbaTable",null,values);
+        }finally {
+            db.close();
+        }
+        return insertResult;
+    }
+
+    public long InserGyro(GyroEntity GE){
+        String _sql = "";
+        ContentValues values = new ContentValues();
+
+        values.put("Time",GE.Time);
+        values.put("GyroX",GE.GyroX);
+        values.put("GyroY",GE.GyroY);
+        values.put("GyroZ",GE.GyroZ);
+
+
+        SQLiteDB sqLiteDB = new SQLiteDB(this,routine.CreateSQL(_sql));
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+
+        long insertResult = 0;
+        try{
+            insertResult = db.insert("AlbaTable",null,values);
+        }finally {
+            db.close();
+        }
+        return insertResult;
+    }
+
+    public long InsertBlue(BluetoothEntity BE){
+        String _sql = "";
+        ContentValues values = new ContentValues();
+
+        values.put("Time",BE.Time);
+        values.put("AirSpeed",BE.AirSpeed);
+        values.put("Roll",BE.MpuRoll);
+        values.put("Cadence",BE.Cadence);
+
+        SQLiteDB sqLiteDB = new SQLiteDB(this,routine.CreateSQL(_sql));
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+
+        long insertResult = 0;
+        try{
+            insertResult = db.insert("GPSTable",null,values);
+        }finally {
+            db.close();
+        }
+        return insertResult;
+    }
 }
 

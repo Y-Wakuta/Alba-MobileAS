@@ -1,5 +1,7 @@
 package com.example.rocko.albamobileas;
 
+import android.widget.TextView;
+
 /**
  * Created by rocko on 2016/11/01.
  */

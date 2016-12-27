@@ -34,6 +34,7 @@ public class BlueTooth {
 
     private BluetoothSocket _blueSocket;
 
+
     public String StatusText;
 
     InputStream mmInStream = null;
@@ -72,7 +73,7 @@ public class BlueTooth {
         }
     }
 
-    BluetoothEntities Read() {
+    BluetoothEntity Read() {
 
         byte[] buffer = new byte[1024];
 
@@ -80,7 +81,7 @@ public class BlueTooth {
 
         String readMsg = null;
 
-        BluetoothEntities _blue = new BluetoothEntities();
+        BluetoothEntity _blue = new BluetoothEntity();
 
         //inPutStreamの読み込み
         try {
