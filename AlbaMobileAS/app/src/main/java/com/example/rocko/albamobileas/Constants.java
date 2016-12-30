@@ -7,6 +7,6 @@ import android.widget.TextView;
  */
 
 public class Constants {
-   public double MpuDefault = 180.0;
-   public double MpuMoveDeg = 0.3;
+   public static double MpuDefault = 180.0;
+   public static double MpuMoveDeg = 0.3;
 }

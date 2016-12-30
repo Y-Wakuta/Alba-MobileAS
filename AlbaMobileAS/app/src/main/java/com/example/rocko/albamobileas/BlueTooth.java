@@ -100,8 +100,8 @@ public class BlueTooth {
                     String[] msgs = msgline[i].split(",", 0);
 
                     if (msgs.length == 3) {
-                        _blue.MpuRoll = Double.parseDouble(msgs[0]);
-                        _blue.AirSpeed = Double.parseDouble(msgs[1]);
+                        _blue.MpuRoll = msgs[0];
+                        _blue.AirSpeed = msgs[1];
                         _blue.msg = msgs[2];
                     }
                 }

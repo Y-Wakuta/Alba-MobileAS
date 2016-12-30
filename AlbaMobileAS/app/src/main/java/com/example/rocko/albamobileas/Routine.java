@@ -1,38 +1,27 @@
 package com.example.rocko.albamobileas;
 
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import android.content.Context;
+import android.content.Context;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 /**
  * Created by rocko on 2016/12/19.
  */
 
 public class Routine {
 
-    public String CreateSQL(String sql){
-        sql += "create table GPSTable(";
-        sql += "Time integer primary key";
-        sql += ",Pressure text";
-        sql += ",Latitude text";
-        sql += ",Longitude text";
-        sql += ",Speed text";
-        sql += ",Accuracy text);";
 
-
-        sql += "create table AcceTable(";
-        sql += "Time integer primary key";
-        sql += ",AcceX text";
-        sql += ",AcceY text";
-        sql += ",AcceZ text);";
-
-        sql += "create table GyroTable(";
-        sql += "Time integer primary key";
-        sql += ",GyroX text";
-        sql += ",GyroY text";
-        sql += ",GyroZ text);";
-
-        sql += "create table BlueTable(";
-        sql += "Time integer primary key";
-        sql += ",AirSpeed text";
-        sql += ",Roll);";
-
-        return sql;
-    }
 }

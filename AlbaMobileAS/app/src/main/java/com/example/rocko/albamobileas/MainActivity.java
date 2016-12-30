@@ -1,8 +1,6 @@
 package com.example.rocko.albamobileas;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -16,11 +14,15 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.os.Handler;
-
-import java.util.ArrayList;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.List;
-
 import android.app.Activity;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends Activity implements SensorEventListener, View.OnClickListener {
 
@@ -31,12 +33,14 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     ProgressBar MpuRight;
     TextView FlightAirSpeed;
     double flightAirSpeed = 0.0;
-
-    Routine routine = new Routine();
+    PrintWriter writer;
+    FullEntity fullEntity = new FullEntity();
 
     private Handler handler = new Handler();
 
-    Constants constants = new Constants();
+    Timer timer = new Timer();
+    int period;
+    long start
 
     //region GPS用オブジェクト
     private LocationManager locationManager;
@@ -75,16 +79,13 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     public TextView BlueStatus;
     BluetoothEntity _blue;
 
-
     TextView AirSpeed;
 
     private boolean connectFlg = false;
 
     private Thread _blueThread;
 
-    List<BluetoothEntity> _blueEntity = new ArrayList<BluetoothEntity>();
-    List<GPSEntity> GPSEntityList = new ArrayList<GPSEntity>();
-    GPSEntity GPSEntity =  new GPSEntity();
+    FullEntity GPSEntity = new FullEntity();
 
     public BlueTooth blueTooth = new BlueTooth();
     private boolean isRunning;
@@ -93,16 +94,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        String _sql = "";
 
         super.onCreate(savedInstanceState);
         startMainScreen();
-
-        SQLiteDB sqLiteDB = new SQLiteDB(this,routine.CreateSQL(_sql));
-
-        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
-
-        db.close();
     }
 
     protected void startMainScreen() {
@@ -169,9 +163,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                             connectFlg = true;
                             while (isRunning) {
                                 _blue = blueTooth.Read();
-
-
-                                _blueEntity.add(_blue);
+                                fullEntity.AirSpeed  =_blue.AirSpeed;
+                                fullEntity.MpuRoll = _blue.MpuRoll;
                                 SetFlight(_blue);
                             }
                         } catch (Exception exc) {
@@ -240,7 +233,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
+        writer.close();
     }
 
     @Override
@@ -251,24 +244,24 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER: //加速度計
-                GPSEntity.AcceX = String.valueOf(event.values[0]);
-                AcceX.setText(GPSEntity.AcceX);
-                GPSEntity.AcceY = String.valueOf(event.values[1]);
-                AcceY.setText(GPSEntity.AcceY);
-                GPSEntity.AcceZ  =String.valueOf(event.values[2]);
-                AcceZ.setText(GPSEntity.AcceZ);
+                fullEntity.AcceX = String.valueOf(event.values[0]);
+                AcceX.setText(fullEntity.AcceX);
+                fullEntity.AcceY = String.valueOf(event.values[1]);
+                AcceY.setText(fullEntity.AcceY);
+                fullEntity.AcceZ = String.valueOf(event.values[2]);
+                AcceZ.setText(fullEntity.AcceZ);
                 break;
             case Sensor.TYPE_GYROSCOPE:  //Gyroセンサー
-                GPSEntity.GyroX = String.valueOf(event.values[0]);
-                GyroX.setText(GPSEntity.GyroX);
-                GPSEntity.GyroY  =String.valueOf(event.values[1]);
-                GyroY.setText(GPSEntity.GyroY);
-                GPSEntity.GyroZ  =String.valueOf(event.values[2]);
-                GyroZ.setText(GPSEntity.GyroZ);
+                fullEntity.GyroX = String.valueOf(event.values[0]);
+                GyroX.setText(fullEntity.GyroX);
+                fullEntity.GyroY = String.valueOf(event.values[1]);
+                GyroY.setText(fullEntity.GyroY);
+                fullEntity.GyroZ = String.valueOf(event.values[2]);
+                GyroZ.setText(fullEntity.GyroZ);
                 break;
             case Sensor.TYPE_PRESSURE:  //気圧計
-                GPSEntity.Pressure = String.valueOf(event.values[0]);
-                press.setText(GPSEntity.Pressure);
+                fullEntity.Pressure = String.valueOf(event.values[0]);
+                press.setText(fullEntity.Pressure);
         }
     }
 
@@ -280,12 +273,14 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         GPSListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                GPSEntity.Latitude = String.valueOf(location.getLatitude());
-                Latitude.setText(GPSEntity.Latitude);
-                GPSEntity.Longitude = String.valueOf(location.getLongitude());
-                Longitude.setText(GPSEntity.Longitude);
-                Speed.setText(String.valueOf(location.getSpeed()));
-                Accuracy.setText(String.valueOf(location.getAccuracy()));
+                fullEntity.Latitude = String.valueOf(location.getLatitude());
+                Latitude.setText(fullEntity.Latitude);
+                fullEntity.Longitude = String.valueOf(location.getLongitude());
+                Longitude.setText(fullEntity.Longitude);
+                fullEntity.Speed = String.valueOf(location.getSpeed());
+                Speed.setText(fullEntity.Speed);
+                fullEntity.Accuracy = String.valueOf(location.getAccuracy());
+                Accuracy.setText(fullEntity.Accuracy);
             }
 
             @Override
@@ -325,7 +320,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         MpuRight.setMax(100);
         MpuRight.setMinimumHeight(0);
         //endregion
-        FlightAirSpeed = (TextView)findViewById(R.id.FlightAirSpeed);
+        FlightAirSpeed = (TextView) findViewById(R.id.FlightAirSpeed);
 
         DebugButton = (TextView) findViewById(R.id.DebugButton);
         DebugButton.setOnClickListener(new View.OnClickListener() {
@@ -341,8 +336,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        MpuLeft.setProgress((int)(_progressBarStatusLeft));
-                        MpuRight.setProgress((int)(_progressBarStatusRight));
+                        MpuLeft.setProgress((int) (_progressBarStatusLeft));
+                        MpuRight.setProgress((int) (_progressBarStatusRight));
                         FlightAirSpeed.setText(String.valueOf(flightAirSpeed));
                     }
                 });
@@ -356,107 +351,41 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     //endregion
 
     //ロール用のprogressBarの値をセットします
-    void SetFlight(BluetoothEntity bt){
-        double roll = bt.MpuRoll;
-        double airSpeed = bt.AirSpeed;
-        double cadence = bt.Cadence;
-        if(-constants.MpuMoveDeg < roll&& roll<0)
-            _progressBarStatusLeft = (-roll - constants.MpuDefault) * 100;
-        else if(roll< -constants.MpuMoveDeg)
+    void SetFlight(BluetoothEntity bt) {
+        double roll = Double.parseDouble(bt.MpuRoll);
+        double airSpeed = Double.parseDouble(bt.AirSpeed);
+        double cadence = Double.parseDouble(bt.Cadence);
+        if (-Constants.MpuMoveDeg < roll && roll < 0)
+            _progressBarStatusLeft = (-roll - Constants.MpuDefault) * 100;
+        else if (roll < -Constants.MpuMoveDeg)
             _progressBarStatusLeft = 100;
-        else if(0 <=  roll&& roll< constants.MpuMoveDeg )
-            _progressBarStatusRight =  (roll - constants.MpuDefault) * 100;
-        else if(constants.MpuMoveDeg < roll)
+        else if (0 <= roll && roll < Constants.MpuMoveDeg)
+            _progressBarStatusRight = (roll - Constants.MpuDefault) * 100;
+        else if (Constants.MpuMoveDeg < roll)
             _progressBarStatusRight = 100;
 
         flightAirSpeed = airSpeed;
     }
 
-    public long InsertGPS(GPSEntity FE) {
-        String _sql = "";
-        ContentValues values = new ContentValues();
-
-        values.put("Time",FE.Time);
-        values.put("Pressure",FE.Pressure);
-        values.put("Latitude",FE.Latitude);
-        values.put("Longitude",FE.Longitude);
-        values.put("Speed",FE.Speed);
-        values.put("Accuracy",FE.Accuracy);
-
-        SQLiteDB sqLiteDB = new SQLiteDB(this,routine.CreateSQL(_sql));
-        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
-
-        long insertResult = 0;
+    public void InitLocalFile(){
         try{
-            insertResult = db.insert("GPSTable",null,values);
-        }finally {
-            db.close();
+            FileOutputStream out =getApplication().openFileOutput("test.csv",MODE_WORLD_READABLE);
+            writer = new PrintWriter(new OutputStreamWriter(out,"UTF-8"));
+        }catch(IOException exc){
+            exc.printStackTrace();
         }
-        return insertResult;
     }
 
-    public long InsertAcce(AcceEntity AE){
-        String _sql = "";
-        ContentValues values = new ContentValues();
-
-        values.put("Time",AE.Time);
-        values.put("AcceX",AE.AcceX);
-        values.put("AcceY",AE.AcceY);
-        values.put("AcceZ",AE.AcceZ);
-
-        SQLiteDB sqLiteDB = new SQLiteDB(this,routine.CreateSQL(_sql));
-        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
-
-        long insertResult = 0;
-        try{
-            insertResult = db.insert("AlbaTable",null,values);
-        }finally {
-            db.close();
+    public void SaveData(FullEntity FE){
+        String saveString = FE.Time + ","
+                + FE.AcceX + "," + FE.AcceY + "," + FE.AcceZ + ","
+                + FE.GyroX + "," + FE.GyroY + "," + FE.GyroZ + ","
+                + FE.Latitude + "," + FE.Longitude + "," + FE.Speed + "," + FE.Accuracy + ","
+                + FE.Pressure;
+        try {
+            writer.append(saveString);
+        }catch (Exception exc){
+            exc.printStackTrace();
         }
-        return insertResult;
-    }
-
-    public long InserGyro(GyroEntity GE){
-        String _sql = "";
-        ContentValues values = new ContentValues();
-
-        values.put("Time",GE.Time);
-        values.put("GyroX",GE.GyroX);
-        values.put("GyroY",GE.GyroY);
-        values.put("GyroZ",GE.GyroZ);
-
-
-        SQLiteDB sqLiteDB = new SQLiteDB(this,routine.CreateSQL(_sql));
-        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
-
-        long insertResult = 0;
-        try{
-            insertResult = db.insert("AlbaTable",null,values);
-        }finally {
-            db.close();
-        }
-        return insertResult;
-    }
-
-    public long InsertBlue(BluetoothEntity BE){
-        String _sql = "";
-        ContentValues values = new ContentValues();
-
-        values.put("Time",BE.Time);
-        values.put("AirSpeed",BE.AirSpeed);
-        values.put("Roll",BE.MpuRoll);
-        values.put("Cadence",BE.Cadence);
-
-        SQLiteDB sqLiteDB = new SQLiteDB(this,routine.CreateSQL(_sql));
-        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
-
-        long insertResult = 0;
-        try{
-            insertResult = db.insert("GPSTable",null,values);
-        }finally {
-            db.close();
-        }
-        return insertResult;
     }
 }
-
