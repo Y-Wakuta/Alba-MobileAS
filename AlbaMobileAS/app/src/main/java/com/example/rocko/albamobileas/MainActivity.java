@@ -23,6 +23,7 @@ import java.util.List;
 import android.app.Activity;
 import java.util.Timer;
 import java.util.TimerTask;
+import android.os.Message;
 
 public class MainActivity extends Activity implements SensorEventListener, View.OnClickListener {
 
@@ -40,7 +41,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     Timer timer = new Timer();
     int period;
-    long start
+    long start;
 
     //region GPS用オブジェクト
     private LocationManager locationManager;
@@ -89,7 +90,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     public BlueTooth blueTooth = new BlueTooth();
     private boolean isRunning;
-
+    private static final int VIEW_INPUT = 1;
+    private static final int VIEW_STATUS = 1;
     //endregion
 
     @Override
@@ -97,6 +99,19 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
         super.onCreate(savedInstanceState);
         startMainScreen();
+
+        Handler blueHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                int action = msg.what;
+                String msgStr = (String) msg.obj;
+                if (action == VIEW_INPUT) {
+                    AirSpeed.setText(msgStr);
+                } else if (action == VIEW_STATUS) {
+                    BlueStatus.setText(msgStr);
+                }
+            }
+        };
     }
 
     protected void startMainScreen() {
