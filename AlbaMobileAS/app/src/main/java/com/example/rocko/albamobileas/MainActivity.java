@@ -31,7 +31,6 @@ import android.app.Activity;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import android.os.Message;
 import java.util.UUID;
 
 public class MainActivity extends Activity implements SensorEventListener, View.OnClickListener {
@@ -48,8 +47,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     private Handler handler = new Handler();
 
-    int period;
-    long start;
     Timer timer = new Timer(true);
 
     //region GPS用オブジェクト
@@ -140,18 +137,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         super.onCreate(savedInstanceState);
         startMainScreen();
 
-        Handler blueHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                int action = msg.what;
-                String msgStr = (String) msg.obj;
-                if (action == VIEW_INPUT) {
-                    AirSpeed.setText(msgStr);
-                } else if (action == VIEW_STATUS) {
-                    BlueStatus.setText(msgStr);
-                }
-            }
-        };
         try {
             _blueAdapter = BluetoothAdapter.getDefaultAdapter();
             BlueStatus.setText("Searching Device.");
