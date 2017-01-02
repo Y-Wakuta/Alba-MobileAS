@@ -1,5 +1,8 @@
 package com.example.rocko.albamobileas;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -9,6 +12,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -16,14 +21,18 @@ import android.widget.TextView;
 import android.os.Handler;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.List;
 import android.app.Activity;
+
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import android.os.Message;
+import java.util.UUID;
 
 public class MainActivity extends Activity implements SensorEventListener, View.OnClickListener {
 
@@ -39,9 +48,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     private Handler handler = new Handler();
 
-    Timer timer = new Timer();
     int period;
     long start;
+    Timer timer = new Timer(true);
 
     //region GPS用オブジェクト
     private LocationManager locationManager;
@@ -74,24 +83,55 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     TextView Flight;
 
     //region Bluetooth用オブジェクト
+    TextView AirSpeed;
+    TextView MpuRoll;
 
     Button connect;
 
     public TextView BlueStatus;
     BluetoothEntity _blue;
 
-    TextView AirSpeed;
 
     private boolean connectFlg = false;
 
     private Thread _blueThread;
 
-    FullEntity GPSEntity = new FullEntity();
-
     public BlueTooth blueTooth = new BlueTooth();
     private boolean isRunning;
+
+    private static final String TAG = "AlbaMobile";
+
+    private BluetoothAdapter _blueAdapter = BluetoothAdapter.getDefaultAdapter();
+
+    private BluetoothDevice _blueDevice;
+
+    private final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+    private final String DEVICE_NAME = "HC-05";
+
+    private static final int VIEW_STATUS = 0;
+
     private static final int VIEW_INPUT = 1;
-    private static final int VIEW_STATUS = 1;
+
+    private BluetoothSocket _blueSocket;
+
+
+    public String StatusText;
+
+    InputStream mmInStream = null;
+
+    OutputStream mmOutputStream = null;
+
+    Handler blueHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            int action = msg.what;
+            if (action == VIEW_INPUT) {
+            } else if (action == VIEW_STATUS) {
+            }
+        }
+    };
+
     //endregion
 
     @Override
@@ -112,6 +152,86 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 }
             }
         };
+        try {
+            _blueAdapter = BluetoothAdapter.getDefaultAdapter();
+            BlueStatus.setText("Searching Device.");
+            Set<BluetoothDevice> devices = _blueAdapter.getBondedDevices();
+            for (BluetoothDevice device : devices) {
+                if (device.getName().equals(DEVICE_NAME)) {
+                    StatusText = "find:" + device.getName();
+                    _blueDevice = device;
+                }
+            }
+
+
+        } catch (Exception exc) {
+            BlueStatus.setText("failed");
+            connectFlg = false;
+        }_blueThread = new Thread() {
+            @Override
+            public void run() {
+                try{
+                    _blueSocket = _blueDevice.createRfcommSocketToServiceRecord(MY_UUID);
+                    _blueSocket.connect();
+                    mmInStream = _blueSocket.getInputStream();
+                    mmOutputStream = _blueSocket.getOutputStream();
+                    BlueStatus.setText("connected");
+                    connectFlg = true;
+
+                    byte[] buffer = new byte[1024];
+
+                    int bytes = 0;
+
+                    String readMsg = null;
+
+                    BluetoothEntity _blue = new BluetoothEntity();
+
+                    while (isRunning) {
+
+                        //inPutStreamの読み込み
+                        try {
+                            bytes = mmInStream.read(buffer);
+                        }catch(Exception exc){
+                            exc.getMessage();
+                        }
+                        Log.i(TAG, "bytes=" + bytes);
+                        String tempReadMsg = new String(buffer, 0, bytes);
+                        readMsg += tempReadMsg;
+                        if (readMsg.trim() != null && !readMsg.trim().equals("")) {
+                            Log.i(TAG, "value= " + readMsg.trim());
+                            String[] msgline = readMsg.split("\n", 0);
+                            if (msgline.length > 1) {
+                                for (int i = 0; i < msgline.length; i++) {
+                                    String[] msgs = msgline[i].split(",", 0);
+
+                                    if (msgs.length == 3) {
+                                        _blue.MpuRoll = msgs[0];
+                                        _blue.AirSpeed = msgs[1];
+                                        _blue.msg = msgs[2];
+                                        fullEntity.AirSpeed  =_blue.AirSpeed;
+                                        AirSpeed.setText(fullEntity.AirSpeed);
+                                        fullEntity.MpuRoll = _blue.MpuRoll;
+                                        MpuRoll.setText(fullEntity.MpuRoll);
+                                        SetFlight(_blue);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception exc) {
+                    isRunning = false;
+                    connectFlg = false;
+                }
+            }
+        };
+
+        InitLocalFile();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                SaveData(fullEntity);
+            }
+        },3500,200);
     }
 
     protected void startMainScreen() {
@@ -144,9 +264,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         //region Bluetooth用オブジェクト
         AirSpeed = (TextView) findViewById(R.id.textViewAirSpeed);
         BlueStatus = (TextView) findViewById(R.id.textViewBlueStatus);
+        MpuRoll = (TextView)findViewById(R.id.textViewMpuRoll);
 
-        AirSpeed.setText("");
-        BlueStatus.setText("");
         //endregion
 
         //region 画面遷移用オブジェクト
@@ -167,32 +286,11 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     @Override
     public void onClick(View v) {
         if (v.equals(connect)) {
-            if (!connectFlg) {
-                BlueStatus.setText("Try connect.");
-                //Threadを起動
-                _blueThread = new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            blueTooth.Connect();
-                            connectFlg = true;
-                            while (isRunning) {
-                                _blue = blueTooth.Read();
-                                fullEntity.AirSpeed  =_blue.AirSpeed;
-                                fullEntity.MpuRoll = _blue.MpuRoll;
-                                SetFlight(_blue);
-                            }
-                        } catch (Exception exc) {
-                            isRunning = false;
-                            connectFlg = false;
-                        }
-                    }
-                };
-                isRunning = true;
-                _blueThread.start();
-            }
-            if (connectFlg)
-                BlueStatus.setText("Already Connected.");
+            // BlueStatus.setText("Try connect.");
+            //Threadを起動
+
+            isRunning = true;
+            _blueThread.start();
         } else if (v.equals(Flight)) {
             setFlightScreen();
         }
@@ -237,7 +335,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         //region Bluetooth用処理
         isRunning = false;
         try {
-            blueTooth.Close();
+            try {
+                _blueSocket.close();
+            }catch(Exception exc){}
             BlueStatus.setText("");
             AirSpeed.setText("");
         } catch (Exception exc) {
@@ -248,7 +348,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        writer.close();
     }
 
     @Override
@@ -312,15 +411,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         };
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, GPSListener);
-    }
 
-    public void onStop() {
-        super.onStop();
-        locationManager.removeUpdates(GPSListener);
-    }
 
-    //endregion
+        //endregion
+    }
 
     //region フライト中画面
     private void setFlightScreen() {
@@ -386,6 +480,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         try{
             FileOutputStream out =getApplication().openFileOutput("test.csv",MODE_WORLD_READABLE);
             writer = new PrintWriter(new OutputStreamWriter(out,"UTF-8"));
+
         }catch(IOException exc){
             exc.printStackTrace();
         }
@@ -396,9 +491,11 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 + FE.AcceX + "," + FE.AcceY + "," + FE.AcceZ + ","
                 + FE.GyroX + "," + FE.GyroY + "," + FE.GyroZ + ","
                 + FE.Latitude + "," + FE.Longitude + "," + FE.Speed + "," + FE.Accuracy + ","
-                + FE.Pressure;
+                + FE.Pressure + "\n\r";
         try {
             writer.append(saveString);
+            writer.close();
+
         }catch (Exception exc){
             exc.printStackTrace();
         }
