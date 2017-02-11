@@ -44,6 +44,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     double flightAirSpeed = 0.0;
     PrintWriter writer;
     FullEntity fullEntity = new FullEntity();
+    boolean _threadRunning = true;
 
     private Handler handler = new Handler();
 
@@ -141,98 +142,118 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 }
             }
 
-
         } catch (Exception exc) {
+
             BlueStatus.setText("failed");
             connectFlg = false;
         }_blueThread = new Thread() {
             @Override
             public void run() {
-                try {
-                    _blueSocket = _blueDevice.createRfcommSocketToServiceRecord(MY_UUID);
-                    _blueSocket.connect();
-                    mmInStream = _blueSocket.getInputStream();
-                    mmOutputStream = _blueSocket.getOutputStream();
-
+                while(_threadRunning) {
                     Message valueMsg = new Message();
-                    valueMsg.what = VIEW_STATUS;
-                    valueMsg.obj = "connected";
-                    blueHandler.sendMessage(valueMsg);
-
-                  //  BlueStatus.setText("connected");
-
-                    connectFlg = true;
-
-                    byte[] buffer = new byte[1024];
-
-                    int bytes = 0;
-
-                    String readMsg = null;
-
-                    BluetoothEntity _blue = new BluetoothEntity();
-
-                    while (isRunning) {
-                        try {
-                            //inPutStreamの読み込み
-                            try {
-                                bytes = mmInStream.read(buffer);
-                            } catch (Exception exc) {
-                                exc.getMessage();
-                            }
-                            Log.i(TAG, "bytes=" + bytes);
-                            String tempReadMsg = new String(buffer, 0, bytes);
-                            readMsg += tempReadMsg;
-                            if (readMsg.trim() != null && !readMsg.trim().equals("")) {
-                                Log.i(TAG, "value= " + readMsg.trim());
-                                String[] msgline = readMsg.split(",\n,", 0);
-                                if (msgline.length > 1) {
-                                    for (int i = 0; i < msgline.length; i++) {
-                                        String[] msgs = msgline[i].split(",", 0);
-
-                                        double[] value = new double[msgs.length];
-                                        try {
-                                            for (int j = 0; j < msgs.length - 1; j++) {
-                                                value[j] = Double.parseDouble(msgs[j]);
-                                            }
-                                        } catch (Exception exc) {
-                                            continue;
-                                        }
-                                        if (msgs.length == 3) {
-
-                                            _blue.MpuRoll = msgs[0];
-                                            _blue.AirSpeed = msgs[1];
-                                            _blue.msg = msgs[2];
-                                            fullEntity.AirSpeed = _blue.AirSpeed;
-                                            fullEntity.MpuRoll = _blue.MpuRoll;
-
-                                            valueMsg = new Message();
-                                            valueMsg.what = VIEW_INPUT_MPU;
-                                            valueMsg.obj = msgs[0];
-                                            blueHandler.sendMessage(valueMsg);
-
-
-                                            valueMsg = new Message();
-                                            valueMsg.what = VIEW_INPUT_AIRSPEED;
-                                            valueMsg.obj = msgs[1];
-                                            blueHandler.sendMessage(valueMsg);
-
-                                            SetFlight(_blue);
-
-                                            //これを入れないと上手く値が更新されない(これがないとView操作が重いから処理がたまってしまうとか原因か)
-                                            Thread.sleep(300);
-                                        }
-                                    }
-                                    readMsg = null;
-                                }
-                            }
-                        } catch (NumberFormatException NExc) {
-                            continue;
+                    try {
+                        _blueSocket = _blueDevice.createRfcommSocketToServiceRecord(MY_UUID);
+                        if (_blueSocket.isConnected())
+                            _blueSocket.close();
+                        Thread.sleep(500);
+                        try{
+                            _blueSocket.connect();
+                            valueMsg.what = VIEW_STATUS;
+                            valueMsg.obj = "connected";
+                            blueHandler.sendMessage(valueMsg);
+                        }catch(IOException e){
+                            try{
+                                _blueSocket = (BluetoothSocket)_blueDevice.getClass().getMethod("createRfcommSocket",new Class[]{int.class}).invoke(_blueDevice,1);
+                                _blueSocket.connect();
+                                valueMsg.what = VIEW_STATUS;
+                                valueMsg.obj = "connected";
+                                blueHandler.sendMessage(valueMsg);
+                                connectFlg = true;
+                            }catch(IOException ie){  valueMsg = new Message();
+                                valueMsg.what = VIEW_STATUS;
+                                valueMsg.obj = "connection failed";
+                                blueHandler.sendMessage(valueMsg);}
                         }
+
+                        mmInStream = _blueSocket.getInputStream();
+                        mmOutputStream = _blueSocket.getOutputStream();
+
+                        byte[] buffer = new byte[1024];
+                        int bytes = 0;
+                        String readMsg = null;
+                        BluetoothEntity _blue = new BluetoothEntity();
+                        while (isRunning) {
+                            try {
+                                //inPutStreamの読み込み
+                                try {
+                                    bytes = mmInStream.read(buffer);
+                                } catch (Exception exc) {
+                                    exc.getMessage();
+                                }
+                                Log.i(TAG, "bytes=" + bytes);
+                                String tempReadMsg = new String(buffer, 0, bytes);
+                                readMsg += tempReadMsg;
+                              /*  try {
+                                    if (readMsg.length() > 100)
+                                        readMsg = null;
+                                }catch(Exception e) {
+                                }*/
+                                if (readMsg.trim() != null && !readMsg.trim().equals("")) {
+                                    Log.i(TAG, "value= " + readMsg.trim());
+                                    String[] msgline = readMsg.split(",\n,", 0);
+                                    if (msgline.length > 1) {
+                                        for (int i = 0; i < msgline.length; i++) {
+                                            String[] msgs = msgline[i].split(",", 0);
+
+                                            double[] value = new double[msgs.length];
+                                            try {
+                                                for (int j = 0; j < msgs.length - 1; j++) {
+                                                    value[j] = Double.parseDouble(msgs[j]);
+                                                }
+                                            } catch (Exception exc) {
+                                                continue;
+                                            }
+                                            if (msgs.length == 3) {
+
+                                                _blue.MpuRoll = msgs[0];
+                                                _blue.AirSpeed = msgs[1];
+                                                _blue.msg = msgs[2];
+                                                fullEntity.AirSpeed = _blue.AirSpeed;
+                                                fullEntity.MpuRoll = _blue.MpuRoll;
+
+                                                valueMsg = new Message();
+                                                valueMsg.what = VIEW_INPUT_MPU;
+                                                valueMsg.obj = msgs[0];
+                                                blueHandler.sendMessage(valueMsg);
+
+                                                valueMsg = new Message();
+                                                valueMsg.what = VIEW_INPUT_AIRSPEED;
+                                                valueMsg.obj = msgs[1];
+                                                blueHandler.sendMessage(valueMsg);
+
+                                                SetFlight(_blue);
+
+                                                //これを入れないと上手く値が更新されない(これがないとView操作が重いから処理がたまってしまうとか原因か)
+                                                Thread.sleep(500);
+                                            }
+                                        }
+                                        readMsg = null;
+                                    }
+                                }
+                            } catch (NumberFormatException NExc) {
+                                continue;
+                            }
+                        }
+                    } catch (Exception exc) {
+                        valueMsg = new Message();
+                        valueMsg.what = VIEW_STATUS;
+                        valueMsg.obj = "connection failed";
+                        blueHandler.sendMessage(valueMsg);
+                        stopThread();
+                        //  isRunning = false;
+                        // connectFlg = false;
+                        return;
                     }
-                } catch (Exception exc) {
-                    //  isRunning = false;
-                    // connectFlg = false;
-                    return;
                 }
             }
         };
@@ -243,6 +264,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 SaveData(fullEntity);
             }
         },3500,200);
+    }
+
+    private void stopThread(){
+        _threadRunning = false;
     }
 
     protected void startMainScreen() {
@@ -296,10 +321,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     @Override
     public void onClick(View v) {
         if (v.equals(connect)) {
-            // BlueStatus.setText("Try connect.");
+            BlueStatus.setText("Try connect.");
             //Threadを起動
-
             isRunning = true;
+            _threadRunning = true;
             _blueThread.start();
         } else if (v.equals(Flight)) {
             setFlightScreen();
@@ -361,19 +386,17 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
         //region Bluetooth用処理
         isRunning = false;
-        try {
-            try {
-                _blueSocket.close();
-            }catch(Exception exc){}
-            BlueStatus.setText("");
-            AirSpeed.setText("");
-        } catch (Exception exc) {
-        }
         //endregion
     }
 
     @Override
     protected void onDestroy() {
+        try {
+            _blueSocket.close();
+        }catch(Exception exc) {
+            BlueStatus.setText("");
+            AirSpeed.setText("");
+        }
         super.onDestroy();
     }
 
