@@ -152,9 +152,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 while(_threadRunning) {
                     Message valueMsg = new Message();
                     try {
-                        _blueSocket = _blueDevice.createRfcommSocketToServiceRecord(MY_UUID);
-                        if (_blueSocket.isConnected())
+                        try {
                             _blueSocket.close();
+                        }catch(Exception e){}
+                        _blueSocket = _blueDevice.createRfcommSocketToServiceRecord(MY_UUID);
                         Thread.sleep(500);
                         try{
                             _blueSocket.connect();
@@ -172,7 +173,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                             }catch(IOException ie){  valueMsg = new Message();
                                 valueMsg.what = VIEW_STATUS;
                                 valueMsg.obj = "connection failed";
-                                blueHandler.sendMessage(valueMsg);}
+                                blueHandler.sendMessage(valueMsg);
+                            }
+                            return;
                         }
 
                         mmInStream = _blueSocket.getInputStream();
@@ -180,33 +183,17 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
                         byte[] buffer = new byte[1024];
                         int bytes = 0;
-                        String readMsg = null;
                         BluetoothEntity _blue = new BluetoothEntity();
                         while (isRunning) {
                             try {
                                 //inPutStreamの読み込み
-                                try {
                                     bytes = mmInStream.read(buffer);
-                                } catch (Exception exc) {
-                                    exc.getMessage();
-                                }
-                                Log.i(TAG, "bytes=" + bytes);
-                                String tempReadMsg = new String(buffer, 0, bytes);
-                                readMsg = tempReadMsg;
+                                String readMsg = new String(buffer, 0, bytes);
                                 if (readMsg.trim() != null && !readMsg.trim().equals("")) {
                                     String[] msgline = readMsg.split(",\n,", 0);
                                     if (msgline.length > 1) {
                                         for (int i = 0; i < msgline.length && i < 1; i++) {
                                             String[] msgs = msgline[i].split(",", 0);
-
-                                            double[] value = new double[msgs.length];
-                                            try {
-                                                for (int j = 0; j < msgs.length - 1; j++) {
-                                                    value[j] = Double.parseDouble(msgs[j]);
-                                                }
-                                            } catch (Exception exc) {
-                                                continue;
-                                            }
                                             if (msgs.length == 3) {
 
                                                 _blue.MpuRoll = msgs[0];
@@ -227,16 +214,17 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
                                                 SetFlight(_blue);
 
-                                                //これを入れないと上手く値が更新されない(これがないとView操作が重いから処理がたまってしまうとか原因か)
-                                                Thread.sleep(500);
+                                                Thread.sleep(8f0);
                                             }
+                                            Thread.sleep(60);
                                         }
-                                        readMsg = null;
                                     }
                                 }
                             } catch (NumberFormatException NExc) {
                                 continue;
                             }
+                            //ここにsleepを入れないと画面が固まる
+                            Thread.sleep(600);
                         }
                     } catch (Exception exc) {
                         valueMsg = new Message();
