@@ -192,17 +192,11 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                 }
                                 Log.i(TAG, "bytes=" + bytes);
                                 String tempReadMsg = new String(buffer, 0, bytes);
-                                readMsg += tempReadMsg;
-                              /*  try {
-                                    if (readMsg.length() > 100)
-                                        readMsg = null;
-                                }catch(Exception e) {
-                                }*/
+                                readMsg = tempReadMsg;
                                 if (readMsg.trim() != null && !readMsg.trim().equals("")) {
-                                    Log.i(TAG, "value= " + readMsg.trim());
                                     String[] msgline = readMsg.split(",\n,", 0);
                                     if (msgline.length > 1) {
-                                        for (int i = 0; i < msgline.length; i++) {
+                                        for (int i = 0; i < msgline.length && i < 1; i++) {
                                             String[] msgs = msgline[i].split(",", 0);
 
                                             double[] value = new double[msgs.length];
@@ -516,12 +510,12 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             double airSpeed = Double.parseDouble(bt.AirSpeed);
             double cadence = Double.parseDouble(bt.Cadence);
             if (-Constants.MpuMoveDeg < roll && roll < 0)
-                _progressBarStatusLeft = (-roll - Constants.MpuDefault) * 100;
-            else if (roll < -Constants.MpuMoveDeg)
+                _progressBarStatusLeft = -((-roll - Constants.MpuDefault) / Constants.MpuMoveDeg )* 100;
+            else if (roll <= -Constants.MpuMoveDeg)
                 _progressBarStatusLeft = 100;
             else if (0 <= roll && roll < Constants.MpuMoveDeg)
-                _progressBarStatusRight = (roll - Constants.MpuDefault) * 100;
-            else if (Constants.MpuMoveDeg < roll)
+                _progressBarStatusRight = ((roll - Constants.MpuDefault)/Constants.MpuMoveDeg) * 100;
+            else if (Constants.MpuMoveDeg <= roll)
                 _progressBarStatusRight = 100;
 
             flightAirSpeed = airSpeed;
