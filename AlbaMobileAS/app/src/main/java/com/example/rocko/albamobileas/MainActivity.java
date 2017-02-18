@@ -334,22 +334,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         //endregion
     }
 
-    Handler blueHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            int action = msg.what;
-            String msgStr = (String) msg.obj;
-            if (action == VIEW_INPUT_MPU) {
-                MpuRoll.setText(msgStr);
-            }else if(action== VIEW_INPUT_AIRSPEED){
-                AirSpeed.setText(msgStr);
-            }else if (action == VIEW_STATUS) {
-                BlueStatus.setText(msgStr);
-            }else if(action == VIEW_SCREEN){
-            }
-        }
-    };
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -419,46 +403,53 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 fullEntity.Accuracy = String.valueOf(location.getAccuracy());
                 Accuracy.setText(fullEntity.Accuracy);
             }
-
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
             }
-
             @Override
             public void onProviderEnabled(String provider) {
             }
-
             @Override
             public void onProviderDisabled(String provider) {
             }
         };
-
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-
         //endregion
     }
+
+    Handler blueHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            int action = msg.what;
+            String msgStr = (String) msg.obj;
+            if (action == VIEW_INPUT_MPU) {
+                MpuRoll.setText(msgStr);
+            }else if(action== VIEW_INPUT_AIRSPEED){
+                AirSpeed.setText(msgStr);
+            }else if (action == VIEW_STATUS) {
+                BlueStatus.setText(msgStr);
+            }else if(action == VIEW_SCREEN){
+            }
+        }
+    };
 
     Handler FlightHandler = new Handler(){
         @Override
         public void handleMessage(Message msg){
             int action = msg.what;
-            try {
-                if (action == VIEW_MPU_PROGRESS_LEFT) {
-                    double msgDouble = (double) msg.obj;
-                    int msgInt = (int)msgDouble;
-                    MpuLeft.setProgress(msgInt);
-                } else if (action == VIEW_MPU_PROGRESS_RIGHT) {
-                    double msgDouble = (double) msg.obj;
-                    int msgInt = (int)msgDouble;
-                    MpuRight.setProgress(msgInt);
-                } else if (action == VIEW_INPUT_AIRSPEED) {
-                    String msgStr = (String) msg.obj;
-                    FlightAirSpeed.setText(String.valueOf(flightAirSpeed));
-                }
+            if (action == VIEW_MPU_PROGRESS_LEFT) {
+                double msgDouble = (double) msg.obj;
+                int msgInt = (int)msgDouble;
+                MpuLeft.setProgress(msgInt);
+            } else if (action == VIEW_MPU_PROGRESS_RIGHT) {
+                double msgDouble = (double) msg.obj;
+                int msgInt = (int)msgDouble;
+                MpuRight.setProgress(msgInt);
+            } else if (action == VIEW_INPUT_AIRSPEED) {
+                double msgDouble = (double) msg.obj;
+                FlightAirSpeed.setText(String.valueOf(msgDouble));
             }
-            catch(Exception e){
-            }}
+        }
     };
 
     //region フライト中画面
@@ -487,21 +478,19 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         new Thread(new Runnable() {
             @Override
             public void run() {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Message valueMsg;
-                        valueMsg = Message.obtain(FlightHandler,VIEW_MPU_PROGRESS_LEFT,_progressBarStatusLeft);
-                        FlightHandler.sendMessage(valueMsg);
-                        valueMsg = Message.obtain(FlightHandler,VIEW_MPU_PROGRESS_RIGHT,_progressBarStatusRight);
-                        FlightHandler.sendMessage(valueMsg);
-                        valueMsg = Message.obtain(FlightHandler,VIEW_INPUT_AIRSPEED,flightAirSpeed);
-                        FlightHandler.sendMessage(valueMsg);
+                while(true){
+                    Message valueMsg;
+                    valueMsg = Message.obtain(FlightHandler, VIEW_MPU_PROGRESS_LEFT, _progressBarStatusLeft);
+                    FlightHandler.sendMessage(valueMsg);
+                    valueMsg = Message.obtain(FlightHandler, VIEW_MPU_PROGRESS_RIGHT, _progressBarStatusRight);
+                    FlightHandler.sendMessage(valueMsg);
+                    valueMsg = Message.obtain(FlightHandler, VIEW_INPUT_AIRSPEED, flightAirSpeed);
+                    FlightHandler.sendMessage(valueMsg);
+                    try {
+                        Thread.sleep(10);
+                    } catch (Exception exc) {
                     }
-                });
-                try {
-                    Thread.sleep(10);
-                } catch (Exception exc) {
+
                 }
             }
         }).start();
@@ -513,7 +502,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         try {
             double roll = Double.parseDouble(bt.MpuRoll);
             double airSpeed = Double.parseDouble(bt.AirSpeed);
-        //    double cadence = Double.parseDouble(bt.Cadence);
+            //    double cadence = Double.parseDouble(bt.Cadence);
             if (-Constants.MpuMoveDeg < roll && roll < 0)
                 _progressBarStatusLeft = -((-roll - Constants.MpuDefault) / Constants.MpuMoveDeg )* 100;
             else if (roll <= -Constants.MpuMoveDeg)
