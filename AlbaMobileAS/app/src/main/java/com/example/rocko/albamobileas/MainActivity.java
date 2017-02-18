@@ -78,7 +78,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     SensorManager pressSensor;
     //endregion
 
-    TextView Flight;
+    Button Flight;
 
     //region Bluetooth用オブジェクト
     TextView AirSpeed;
@@ -115,6 +115,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     private static final int VIEW_SCREEN = 3;
 
+    private static final int VIEW_MPU_PROGRESS_LEFT = 4;
+
+    private static final int VIEW_MPU_PROGRESS_RIGHT = 5;
+
     private BluetoothSocket _blueSocket;
 
     public String StatusText;
@@ -130,7 +134,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
         super.onCreate(savedInstanceState);
         startMainScreen();
-
+        //  Flight.setEnabled(false);
         try {
             _blueAdapter = BluetoothAdapter.getDefaultAdapter();
             BlueStatus.setText("Searching Device.");
@@ -159,25 +163,23 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                         Thread.sleep(500);
                         try{
                             _blueSocket.connect();
-                            valueMsg.what = VIEW_STATUS;
-                            valueMsg.obj = "connected";
+                            valueMsg = Message.obtain(blueHandler,VIEW_STATUS,"connected");
                             blueHandler.sendMessage(valueMsg);
+                            //       Flight.setEnabled(true);
                         }catch(IOException e){
                             try{
                                 _blueSocket = (BluetoothSocket)_blueDevice.getClass().getMethod("createRfcommSocket",new Class[]{int.class}).invoke(_blueDevice,1);
                                 _blueSocket.connect();
-                                valueMsg.what = VIEW_STATUS;
-                                valueMsg.obj = "connected";
+                                valueMsg = Message.obtain(blueHandler,VIEW_STATUS,"connected");
                                 blueHandler.sendMessage(valueMsg);
+                                // Flight.setEnabled(true);
                                 connectFlg = true;
-                            }catch(IOException ie){  valueMsg = new Message();
-                                valueMsg.what = VIEW_STATUS;
-                                valueMsg.obj = "connection failed";
+                            }catch(IOException ie){
+                                valueMsg = Message.obtain(blueHandler,VIEW_STATUS,"connection failed");
                                 blueHandler.sendMessage(valueMsg);
                             }
                             return;
                         }
-
                         mmInStream = _blueSocket.getInputStream();
                         mmOutputStream = _blueSocket.getOutputStream();
 
@@ -187,7 +189,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                         while (isRunning) {
                             try {
                                 //inPutStreamの読み込み
-                                    bytes = mmInStream.read(buffer);
+                                bytes = mmInStream.read(buffer);
                                 String readMsg = new String(buffer, 0, bytes);
                                 if (readMsg.trim() != null && !readMsg.trim().equals("")) {
                                     String[] msgline = readMsg.split(",\n,", 0);
@@ -202,21 +204,13 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                                 fullEntity.AirSpeed = _blue.AirSpeed;
                                                 fullEntity.MpuRoll = _blue.MpuRoll;
 
-                                                valueMsg = new Message();
-                                                valueMsg.what = VIEW_INPUT_MPU;
-                                                valueMsg.obj = msgs[0];
+                                                valueMsg = Message.obtain(blueHandler,VIEW_INPUT_MPU,msgs[0]);
                                                 blueHandler.sendMessage(valueMsg);
-
-                                                valueMsg = new Message();
-                                                valueMsg.what = VIEW_INPUT_AIRSPEED;
-                                                valueMsg.obj = msgs[1];
+                                                valueMsg = Message.obtain(blueHandler,VIEW_INPUT_AIRSPEED,msgs[1]);
                                                 blueHandler.sendMessage(valueMsg);
 
                                                 SetFlight(_blue);
-
-                                                Thread.sleep(8f0);
                                             }
-                                            Thread.sleep(60);
                                         }
                                     }
                                 }
@@ -227,9 +221,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                             Thread.sleep(600);
                         }
                     } catch (Exception exc) {
-                        valueMsg = new Message();
-                        valueMsg.what = VIEW_STATUS;
-                        valueMsg.obj = "connection failed";
+                        valueMsg = Message.obtain(blueHandler,VIEW_STATUS,exc.getMessage());
                         blueHandler.sendMessage(valueMsg);
                         stopThread();
                         //  isRunning = false;
@@ -287,7 +279,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         //endregion
 
         //region 画面遷移用オブジェクト
-        Flight = (TextView) findViewById(R.id.FlightButton);
+        Flight = (Button) findViewById(R.id.FlightButton);
         //endregion
 
         //region Bluetooth準備
@@ -354,7 +346,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             }else if (action == VIEW_STATUS) {
                 BlueStatus.setText(msgStr);
             }else if(action == VIEW_SCREEN){
-
             }
         }
     };
@@ -448,6 +439,28 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         //endregion
     }
 
+    Handler FlightHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg){
+            int action = msg.what;
+            try {
+                if (action == VIEW_MPU_PROGRESS_LEFT) {
+                    double msgDouble = (double) msg.obj;
+                    int msgInt = (int)msgDouble;
+                    MpuLeft.setProgress(msgInt);
+                } else if (action == VIEW_MPU_PROGRESS_RIGHT) {
+                    double msgDouble = (double) msg.obj;
+                    int msgInt = (int)msgDouble;
+                    MpuRight.setProgress(msgInt);
+                } else if (action == VIEW_INPUT_AIRSPEED) {
+                    String msgStr = (String) msg.obj;
+                    FlightAirSpeed.setText(String.valueOf(flightAirSpeed));
+                }
+            }
+            catch(Exception e){
+            }}
+    };
+
     //region フライト中画面
     private void setFlightScreen() {
         setContentView(R.layout.activity_flight);
@@ -477,9 +490,13 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        MpuLeft.setProgress((int) (_progressBarStatusLeft));
-                        MpuRight.setProgress((int) (_progressBarStatusRight));
-                        FlightAirSpeed.setText(String.valueOf(flightAirSpeed));
+                        Message valueMsg;
+                        valueMsg = Message.obtain(FlightHandler,VIEW_MPU_PROGRESS_LEFT,_progressBarStatusLeft);
+                        FlightHandler.sendMessage(valueMsg);
+                        valueMsg = Message.obtain(FlightHandler,VIEW_MPU_PROGRESS_RIGHT,_progressBarStatusRight);
+                        FlightHandler.sendMessage(valueMsg);
+                        valueMsg = Message.obtain(FlightHandler,VIEW_INPUT_AIRSPEED,flightAirSpeed);
+                        FlightHandler.sendMessage(valueMsg);
                     }
                 });
                 try {
@@ -496,7 +513,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         try {
             double roll = Double.parseDouble(bt.MpuRoll);
             double airSpeed = Double.parseDouble(bt.AirSpeed);
-            double cadence = Double.parseDouble(bt.Cadence);
+        //    double cadence = Double.parseDouble(bt.Cadence);
             if (-Constants.MpuMoveDeg < roll && roll < 0)
                 _progressBarStatusLeft = -((-roll - Constants.MpuDefault) / Constants.MpuMoveDeg )* 100;
             else if (roll <= -Constants.MpuMoveDeg)

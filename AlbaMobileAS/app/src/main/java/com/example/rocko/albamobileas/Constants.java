@@ -8,6 +8,6 @@ import android.widget.TextView;
 
 public class Constants {
    public static double MpuDefault = 0.0;
-   public static double MpuMoveDeg = 0.3;
+   public static double MpuMoveDeg = 2.0;
    public static int LoopNumMax = 2;
 }
