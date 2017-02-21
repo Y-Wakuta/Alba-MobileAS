@@ -5,24 +5,10 @@ package com.example.rocko.albamobileas;
  */
 
 public class FullEntity {
-    //region column
-    String Time  = "";
-    String Pressure = "";
-    String Latitude = "";
-    String Longitude = "";
-    String Speed = "";
-    String Accuracy = "";
-
-    String AcceX = "";
-    String AcceY = "";
-    String AcceZ = "";
-
-    String GyroX = "";
-    String GyroY = "";
-    String GyroZ = "";
-
-    String AirSpeed = "";
-    String MpuRoll = "";
-    String Cadence = "";
-    //endregion
+    public String Time  = "";
+    public GPSEntity gpsEntity;
+    public AcceEntity acceEntity;
+    public GyroEntity gyroEntity;
+    public BluetoothEntity bluetoothEntity;
+    public String pressure;
 }

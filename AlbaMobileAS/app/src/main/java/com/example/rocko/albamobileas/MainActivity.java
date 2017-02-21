@@ -14,7 +14,9 @@ import android.location.LocationManager;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -27,13 +29,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import android.app.Activity;
+import java.util.*;
 
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
 
 public class MainActivity extends Activity implements SensorEventListener, View.OnClickListener {
 
@@ -44,8 +49,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     ProgressBar MpuRight;
     TextView FlightAirSpeed;
     double flightAirSpeed = 0.0;
-    PrintWriter writer;
-    FullEntity fullEntity = new FullEntity();
+
     boolean _threadRunning = true;
 
     Timer timer = new Timer(true);
@@ -95,7 +99,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     public BlueTooth blueTooth = new BlueTooth();
     private boolean isRunning = true;
 
-    private static final String TAG = "AlbaMobile";
+
 
     private BluetoothAdapter _blueAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -105,9 +109,23 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     public String StatusText;
 
-    InputStream mmInStream = null;
+    //region Entities
+    FullEntity fullEntity = new FullEntity();
+
+    GPSEntity gpsEntity = new GPSEntity();
+
+    AcceEntity acceEntity = new AcceEntity();
+
+    GyroEntity gyroEntity = new GyroEntity();
+
+    String pressure;
+
+    BluetoothEntity bluetoothEntity = new BluetoothEntity();
+    //endregion
 
     OutputStream mmOutputStream = null;
+
+    FileOutputStream fos = null;
 
     //endregion
 
@@ -123,20 +141,17 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             Set<BluetoothDevice> devices = _blueAdapter.getBondedDevices();
             for (BluetoothDevice device : devices) {
                 if (device.getName().equals(Constants.DEVICE_NAME)) {
-                    StatusText = "find:" + device.getName();
                     _blueDevice = device;
                 }
             }
-
         } catch (Exception exc) {
-
             BlueStatus.setText("failed");
             connectFlg = false;
         }_blueThread = new Thread() {
             @Override
             public void run() {
                 while(_threadRunning) {
-                    Message valueMsg = new Message();
+                    Message valueMsg;
                     try {
                         try {
                             _blueSocket.close();
@@ -148,21 +163,21 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                             valueMsg = Message.obtain(blueHandler,Constants.VIEW_STATUS,"connected");
                             blueHandler.sendMessage(valueMsg);
                             //       Flight.setEnabled(true);
-                        }catch(IOException e){
-                            try{
-                                _blueSocket = (BluetoothSocket)_blueDevice.getClass().getMethod("createRfcommSocket",new Class[]{int.class}).invoke(_blueDevice,1);
+                        }catch(IOException e) {
+                            try {
+                                _blueSocket = (BluetoothSocket) _blueDevice.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(_blueDevice, 1);
                                 _blueSocket.connect();
-                                valueMsg = Message.obtain(blueHandler,Constants.VIEW_STATUS,"connected");
+                                valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, "connected");
                                 blueHandler.sendMessage(valueMsg);
                                 // Flight.setEnabled(true);
                                 connectFlg = true;
-                            }catch(IOException ie){
-                                valueMsg = Message.obtain(blueHandler,Constants.VIEW_STATUS,"connection failed");
+                            } catch (IOException ie) {
+                                valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, "connection failed");
                                 blueHandler.sendMessage(valueMsg);
                             }
                             return;
                         }
-                        mmInStream = _blueSocket.getInputStream();
+                        InputStream mmInStream = _blueSocket.getInputStream();
                         mmOutputStream = _blueSocket.getOutputStream();
 
                         byte[] buffer = new byte[1024];
@@ -183,8 +198,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                                 _blue.MpuRoll = msgs[0];
                                                 _blue.AirSpeed = msgs[1];
                                                 _blue.msg = msgs[2];
-                                                fullEntity.AirSpeed = _blue.AirSpeed;
-                                                fullEntity.MpuRoll = _blue.MpuRoll;
+                                                bluetoothEntity.AirSpeed = _blue.AirSpeed;
+                                                bluetoothEntity.MpuRoll = _blue.MpuRoll;
 
                                                 valueMsg = Message.obtain(blueHandler,Constants.VIEW_INPUT_MPU,msgs[0]);
                                                 blueHandler.sendMessage(valueMsg);
@@ -217,6 +232,12 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
+                fullEntity.gpsEntity = gpsEntity;
+                fullEntity.acceEntity  =acceEntity;
+                fullEntity.gyroEntity  =gyroEntity;
+                fullEntity.pressure = pressure;
+                fullEntity.bluetoothEntity = bluetoothEntity;
+
                 SaveData(fullEntity);
             }
         },3500,200);
@@ -347,24 +368,24 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER: //加速度計
-                fullEntity.AcceX = String.valueOf(event.values[0]);
-                AcceX.setText(fullEntity.AcceX);
-                fullEntity.AcceY = String.valueOf(event.values[1]);
-                AcceY.setText(fullEntity.AcceY);
-                fullEntity.AcceZ = String.valueOf(event.values[2]);
-                AcceZ.setText(fullEntity.AcceZ);
+                acceEntity.AcceX = String.valueOf(event.values[0]);
+                AcceX.setText(acceEntity.AcceX);
+                acceEntity.AcceY = String.valueOf(event.values[1]);
+                AcceY.setText(acceEntity.AcceY);
+                acceEntity.AcceZ = String.valueOf(event.values[2]);
+                AcceZ.setText(acceEntity.AcceZ);
                 break;
             case Sensor.TYPE_GYROSCOPE:  //Gyroセンサー
-                fullEntity.GyroX = String.valueOf(event.values[0]);
-                GyroX.setText(fullEntity.GyroX);
-                fullEntity.GyroY = String.valueOf(event.values[1]);
-                GyroY.setText(fullEntity.GyroY);
-                fullEntity.GyroZ = String.valueOf(event.values[2]);
-                GyroZ.setText(fullEntity.GyroZ);
+                gyroEntity.GyroX = String.valueOf(event.values[0]);
+                GyroX.setText(gyroEntity.GyroX);
+                gyroEntity.GyroY = String.valueOf(event.values[1]);
+                GyroY.setText(gyroEntity.GyroY);
+                gyroEntity.GyroZ = String.valueOf(event.values[2]);
+                GyroZ.setText(gyroEntity.GyroZ);
                 break;
             case Sensor.TYPE_PRESSURE:  //気圧計
-                fullEntity.Pressure = String.valueOf(event.values[0]);
-                press.setText(fullEntity.Pressure);
+                pressure = String.valueOf(event.values[0]);
+                press.setText(pressure);
         }
     }
 
@@ -376,14 +397,14 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         GPSListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                fullEntity.Latitude = String.valueOf(location.getLatitude());
-                Latitude.setText(fullEntity.Latitude);
-                fullEntity.Longitude = String.valueOf(location.getLongitude());
-                Longitude.setText(fullEntity.Longitude);
-                fullEntity.Speed = String.valueOf(location.getSpeed());
-                Speed.setText(fullEntity.Speed);
-                fullEntity.Accuracy = String.valueOf(location.getAccuracy());
-                Accuracy.setText(fullEntity.Accuracy);
+                gpsEntity.Latitude = String.valueOf(location.getLatitude());
+                Latitude.setText(gpsEntity.Latitude);
+                gpsEntity.Longitude = String.valueOf(location.getLongitude());
+                Longitude.setText(gpsEntity.Longitude);
+                gpsEntity.Speed = String.valueOf(location.getSpeed());
+                Speed.setText(gpsEntity.Speed);
+                gpsEntity.Accuracy = String.valueOf(location.getAccuracy());
+                Accuracy.setText(gpsEntity.Accuracy);
             }
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -501,22 +522,31 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     }
 
     public void InitLocalFile(){
-        try{
-            FileOutputStream out =getApplication().openFileOutput("test.csv",MODE_WORLD_READABLE);
-            writer = new PrintWriter(new OutputStreamWriter(out,"UTF-8"));
+        String sdPath = Environment.getExternalStorageDirectory() + "sample.txt";
+        String sdCardState = Environment.getExternalStorageState();
 
-        }catch(IOException exc){
-            exc.printStackTrace();
+        if(sdCardState.equals(Environment.MEDIA_MOUNTED)) {
+
+            try {
+                fos = new FileOutputStream(sdPath);
+
+                SaveData(fullEntity);
+            } catch (IOException e) {
+
+            }
         }
     }
 
-    public void SaveData(FullEntity FE){
+    public void SaveData(FullEntity FE,FileOutputStream fos){
         String saveString = FE.Time + ","
-                + FE.AcceX + "," + FE.AcceY + "," + FE.AcceZ + ","
-                + FE.GyroX + "," + FE.GyroY + "," + FE.GyroZ + ","
-                + FE.Latitude + "," + FE.Longitude + "," + FE.Speed + "," + FE.Accuracy + ","
-                + FE.Pressure + "\n\r";
+                + FE.acceEntity.AcceX + "," + FE.acceEntity.AcceY + "," + FE.acceEntity.AcceZ + ","
+                + FE.gyroEntity.GyroX + "," + FE.gyroEntity.GyroY + "," + FE.gyroEntity.GyroZ + ","
+                + FE.gpsEntity.Latitude + "," + FE.gpsEntity.Longitude + "," + FE.gpsEntity.Speed + "," + FE.gpsEntity.Accuracy + ","
+                + FE.pressure + "\n\r";
+
         try {
+            fos.write(saveString.getBytes());
+            PrintWriter writer;
             writer.append(saveString);
             writer.close();
 

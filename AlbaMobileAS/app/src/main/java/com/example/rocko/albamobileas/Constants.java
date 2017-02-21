@@ -17,6 +17,8 @@ public class Constants {
 
    public static final String DEVICE_NAME = "HC-05";
 
+   private static final String TAG = "AlbaMobile";
+
    public static final int VIEW_STATUS = 0;
 
    public static final int VIEW_INPUT_MPU = 1;
