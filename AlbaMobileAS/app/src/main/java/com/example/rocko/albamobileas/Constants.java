@@ -11,7 +11,6 @@ import java.util.UUID;
 public class Constants {
    public static double MpuDefault = 0.0;
    public static double MpuMoveDeg = 2.0;
-   public static int LoopNumMax = 2;
 
    public static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 

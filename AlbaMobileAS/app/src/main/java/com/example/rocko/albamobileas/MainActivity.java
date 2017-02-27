@@ -90,6 +90,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     Button connect;
 
+    TextView Command;
+
     public TextView BlueStatus;
 
     private boolean connectFlg = false;
@@ -111,6 +113,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     //region Entities
     FullEntity fullEntity = new FullEntity();
+
+    List<FullEntity> fullEntityList = new ArrayList<FullEntity>();
 
     GPSEntity gpsEntity = new GPSEntity();
 
@@ -228,7 +232,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 }
             }
         };
-        InitLocalFile();
+
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -237,10 +241,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 fullEntity.gyroEntity  =gyroEntity;
                 fullEntity.pressure = pressure;
                 fullEntity.bluetoothEntity = bluetoothEntity;
-
-                SaveData(fullEntity);
+                fullEntityList.add(fullEntity);
             }
-        },3500,200);
+        },300,200);
     }
 
     private void stopThread(){
@@ -351,6 +354,11 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     @Override
     protected void onDestroy() {
+        InitLocalFile();
+
+        for (FullEntity FE:fullEntityList) {
+            SaveData(FE);
+        }
         try {
             _blueSocket.close();
         }catch(Exception exc) {
@@ -420,6 +428,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         //endregion
     }
 
+    //region Handler
     Handler blueHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -454,6 +463,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             }
         }
     };
+    //endregion
 
     //region フライト中画面
     private void setFlightScreen() {
@@ -469,6 +479,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         MpuRight.setMinimumHeight(0);
         //endregion
         FlightAirSpeed = (TextView) findViewById(R.id.FlightAirSpeed);
+        Command= (TextView)findViewById(R.id.Command);
 
         DebugButton = (Button) findViewById(R.id.DebugButton);
         DebugButton.setOnClickListener(new View.OnClickListener() {
@@ -529,29 +540,28 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
             try {
                 fos = new FileOutputStream(sdPath);
-
-                SaveData(fullEntity);
             } catch (IOException e) {
-
             }
         }
     }
 
-    public void SaveData(FullEntity FE,FileOutputStream fos){
+    public void SaveData(FullEntity FE){
         String saveString = FE.Time + ","
                 + FE.acceEntity.AcceX + "," + FE.acceEntity.AcceY + "," + FE.acceEntity.AcceZ + ","
                 + FE.gyroEntity.GyroX + "," + FE.gyroEntity.GyroY + "," + FE.gyroEntity.GyroZ + ","
                 + FE.gpsEntity.Latitude + "," + FE.gpsEntity.Longitude + "," + FE.gpsEntity.Speed + "," + FE.gpsEntity.Accuracy + ","
                 + FE.pressure + "\n\r";
-
         try {
             fos.write(saveString.getBytes());
-            PrintWriter writer;
-            writer.append(saveString);
-            writer.close();
-
         }catch (Exception exc){
             exc.printStackTrace();
+        }finally {
+            try{
+                if(fos != null)
+                    fos.close();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
         }
     }
 }
