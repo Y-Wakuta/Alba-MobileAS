@@ -148,7 +148,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         } catch (Exception exc) {
             BlueStatus.setText("failed");
             connectFlg = false;
-        }_blueThread = new Thread() {
+        }
+        _blueThread = new Thread() {
             @Override
             public void run() {
                 while(_threadRunning) {
@@ -484,7 +485,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         new Thread(new Runnable() {
             @Override
             public void run() {
-                ToneGenerator toneGenerator = new ToneGenerator(AudioManager.STREAM_SYSTEM,ToneGenerator.MAX_VOLUME);
                 while(isFlight){
                     Message valueMsg;
                     valueMsg = Message.obtain(FlightHandler, Constants.VIEW_MPU_PROGRESS_LEFT, _progressBarStatusLeft);
@@ -493,8 +493,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                     FlightHandler.sendMessage(valueMsg);
                     valueMsg = Message.obtain(FlightHandler, Constants.VIEW_INPUT_AIRSPEED, flightAirSpeed);
                     FlightHandler.sendMessage(valueMsg);
-
-                   toneGenerator.startTone(toneGenerator.TONE_PROP_BEEP);
                     try {
                         Thread.sleep(100);
                     } catch (Exception exc) {
@@ -507,19 +505,23 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     //ロール用のprogressBarの値をセットします
     void SetFlight(BluetoothEntity bt) {
+        ToneGenerator toneGenerator = new ToneGenerator(AudioManager.STREAM_SYSTEM,ToneGenerator.MAX_VOLUME);
         try {
             double roll = Double.parseDouble(bt.MpuRoll);
             double airSpeed = Double.parseDouble(bt.AirSpeed);
             //    double cadence = Double.parseDouble(bt.Cadence);
             if (-Constants.MpuMoveDeg < roll && roll < 0)
                 _progressBarStatusLeft = -((-roll - Constants.MpuDefault) / Constants.MpuMoveDeg )* 100;
-            else if (roll <= -Constants.MpuMoveDeg)
+            else if (roll <= -Constants.MpuMoveDeg){
                 _progressBarStatusLeft = 100;
+                toneGenerator.startTone(toneGenerator.TONE_PROP_BEEP);
+            }
             else if (0 <= roll && roll < Constants.MpuMoveDeg)
                 _progressBarStatusRight = ((roll - Constants.MpuDefault)/Constants.MpuMoveDeg) * 100;
-            else if (Constants.MpuMoveDeg <= roll)
+            else if (Constants.MpuMoveDeg <= roll){
                 _progressBarStatusRight = 100;
-
+                toneGenerator.startTone(toneGenerator.TONE_PROP_BEEP);
+            }
             flightAirSpeed = airSpeed;
         }catch(Exception exc){return;}
     }
