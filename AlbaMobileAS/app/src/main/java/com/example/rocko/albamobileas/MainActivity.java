@@ -51,6 +51,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     double flightAirSpeed = 0.0;
 
     boolean _threadRunning = true;
+    boolean isFlight = false;
 
     Timer timer = new Timer(true);
 
@@ -238,7 +239,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 fullEntity.pressure = pressure;
                 fullEntity.bluetoothEntity = bluetoothEntity;
 
-                SaveData(fullEntity);
+                Routine.SaveData(fullEntity,fos);
             }
         },3500,200);
     }
@@ -304,6 +305,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             _threadRunning = true;
             _blueThread.start();
         } else if (v.equals(Flight)) {
+            isFlight = true;
             setFlightScreen();
         }
         //endregion
@@ -474,6 +476,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         DebugButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isFlight = false;
                 startMainScreen();
             }
         });
@@ -481,7 +484,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while(true){
+                ToneGenerator toneGenerator = new ToneGenerator(AudioManager.STREAM_SYSTEM,ToneGenerator.MAX_VOLUME);
+                while(isFlight){
                     Message valueMsg;
                     valueMsg = Message.obtain(FlightHandler, Constants.VIEW_MPU_PROGRESS_LEFT, _progressBarStatusLeft);
                     FlightHandler.sendMessage(valueMsg);
@@ -490,10 +494,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                     valueMsg = Message.obtain(FlightHandler, Constants.VIEW_INPUT_AIRSPEED, flightAirSpeed);
                     FlightHandler.sendMessage(valueMsg);
 
-                    ToneGenerator toneGenerator = new ToneGenerator(AudioManager.STREAM_SYSTEM,ToneGenerator.MAX_VOLUME);
-                    toneGenerator.startTone(toneGenerator.TONE_PROP_BEEP);
+                   toneGenerator.startTone(toneGenerator.TONE_PROP_BEEP);
                     try {
-                        Thread.sleep(10);
+                        Thread.sleep(100);
                     } catch (Exception exc) {
                     }
                 }
@@ -526,32 +529,12 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         String sdCardState = Environment.getExternalStorageState();
 
         if(sdCardState.equals(Environment.MEDIA_MOUNTED)) {
-
             try {
                 fos = new FileOutputStream(sdPath);
-
-                SaveData(fullEntity);
             } catch (IOException e) {
 
             }
         }
     }
 
-    public void SaveData(FullEntity FE,FileOutputStream fos){
-        String saveString = FE.Time + ","
-                + FE.acceEntity.AcceX + "," + FE.acceEntity.AcceY + "," + FE.acceEntity.AcceZ + ","
-                + FE.gyroEntity.GyroX + "," + FE.gyroEntity.GyroY + "," + FE.gyroEntity.GyroZ + ","
-                + FE.gpsEntity.Latitude + "," + FE.gpsEntity.Longitude + "," + FE.gpsEntity.Speed + "," + FE.gpsEntity.Accuracy + ","
-                + FE.pressure + "\n\r";
-
-        try {
-            fos.write(saveString.getBytes());
-            PrintWriter writer;
-            writer.append(saveString);
-            writer.close();
-
-        }catch (Exception exc){
-            exc.printStackTrace();
-        }
-    }
 }

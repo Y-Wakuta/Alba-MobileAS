@@ -22,6 +22,19 @@ import java.io.InputStreamReader;
  */
 
 public class Routine {
+    public static void SaveData(FullEntity FE,FileOutputStream fos){
+        String saveString = FE.Time + ","
+                + FE.acceEntity.AcceX + "," + FE.acceEntity.AcceY + "," + FE.acceEntity.AcceZ + ","
+                + FE.gyroEntity.GyroX + "," + FE.gyroEntity.GyroY + "," + FE.gyroEntity.GyroZ + ","
+                + FE.gpsEntity.Latitude + "," + FE.gpsEntity.Longitude + "," + FE.gpsEntity.Speed + "," + FE.gpsEntity.Accuracy + ","
+                + FE.pressure + "\n\r";
 
+        try {
+            fos.write(saveString.getBytes());
+
+        }catch (Exception exc){
+            exc.printStackTrace();
+        }
+    }
 
 }
