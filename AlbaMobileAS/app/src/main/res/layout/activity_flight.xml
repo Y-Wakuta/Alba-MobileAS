@@ -47,6 +47,16 @@
             android:layout_alignParentBottom="true"
             android:layout_toLeftOf="@+id/MpuRight" />
 
+        <Button
+            android:id="@+id/NextButton"
+            android:layout_width="70dp"
+            android:layout_height="50dp"
+            android:background="#1e90ff"
+            android:text="NEXT"
+            android:layout_gravity="right"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@+id/DebugButton" />
+
         <TextView
             android:id="@+id/FlightAirSpeed"
             android:layout_width="450dp"

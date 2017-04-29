@@ -34,6 +34,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import android.app.Activity;
 import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import java.util.ListIterator;
 import java.util.Set;
@@ -65,16 +67,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     //endregion
 
     //region 加速度計用オブジェクト
-    TextView AcceX;
-    TextView AcceY;
-    TextView AcceZ;
     SensorManager acceSensor;
     //endregion
 
     //region ジャイロ用オブジェクト
-    TextView GyroX;
-    TextView GyroY;
-    TextView GyroZ;
     SensorManager gyroSensor;
     //endregion
 
@@ -91,6 +87,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     Button connect;
 
+    Button NextButton;
+
     public TextView BlueStatus;
 
     private boolean connectFlg = false;
@@ -102,7 +100,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     private  List<FullEntity> FEList = new ArrayList<>();
 
-private int SaveCounter = 0;
+    private int SaveCounter = 0;
 
     private BluetoothAdapter _blueAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -211,7 +209,6 @@ private int SaveCounter = 0;
                                                 blueHandler.sendMessage(valueMsg);
 
                                                 SetFlight(_blue);
-
                                             }
                                         }
                                     }
@@ -237,7 +234,6 @@ private int SaveCounter = 0;
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-
                 fullEntity.gpsEntity = gpsEntity;
                 fullEntity.acceEntity  =acceEntity;
                 fullEntity.gyroEntity  =gyroEntity;
@@ -246,7 +242,6 @@ private int SaveCounter = 0;
                 FullEntity fullEndEntity;
                 fullEndEntity = fullEntity.Clone();
                 FEList.add(fullEndEntity);
-
             }
         },3500,350);
         timer.schedule(new TimerTask() {
@@ -274,18 +269,6 @@ private int SaveCounter = 0;
         Accuracy = (TextView) findViewById(R.id.textViewAccuracy);
         //endregion
 
-        //region 加速度計用オブジェクト
-        AcceX = (TextView) findViewById(R.id.textViewAccelermeterX);
-        AcceY = (TextView) findViewById(R.id.textViewAccelermeterY);
-        AcceZ = (TextView) findViewById(R.id.textViewAccelermeterZ);
-        //endregion
-
-        //region ジャイロセンサ用オブジェクト
-        GyroX = (TextView) findViewById(R.id.textViewGyroX);
-        GyroY = (TextView) findViewById(R.id.textViewGyroY);
-        GyroZ = (TextView) findViewById(R.id.textViewGyroZ);
-        //endregion
-
         //region 気圧計用オブジェクト
         press = (TextView) findViewById(R.id.textViewPressure);
         //endregion
@@ -294,7 +277,6 @@ private int SaveCounter = 0;
         AirSpeed = (TextView) findViewById(R.id.textViewAirSpeed);
         BlueStatus = (TextView) findViewById(R.id.textViewBlueStatus);
         MpuRoll = (TextView)findViewById(R.id.textViewMpuRoll);
-
         //endregion
 
         //region 画面遷移用オブジェクト
@@ -361,6 +343,11 @@ private int SaveCounter = 0;
         gyroSensor.unregisterListener(this);
         pressSensor.unregisterListener(this);
 
+        try {
+            fos.flush();
+            fos.close();
+        }catch (IOException exc){}
+
         //region Bluetooth用処理
         isRunning = false;
         //endregion
@@ -387,19 +374,13 @@ private int SaveCounter = 0;
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER: //加速度計
                 acceEntity.AcceX = String.valueOf(event.values[0]);
-                AcceX.setText(acceEntity.AcceX);
                 acceEntity.AcceY = String.valueOf(event.values[1]);
-                AcceY.setText(acceEntity.AcceY);
                 acceEntity.AcceZ = String.valueOf(event.values[2]);
-                AcceZ.setText(acceEntity.AcceZ);
                 break;
             case Sensor.TYPE_GYROSCOPE:  //Gyroセンサー
                 gyroEntity.GyroX = String.valueOf(event.values[0]);
-                GyroX.setText(gyroEntity.GyroX);
                 gyroEntity.GyroY = String.valueOf(event.values[1]);
-                GyroY.setText(gyroEntity.GyroY);
                 gyroEntity.GyroZ = String.valueOf(event.values[2]);
-                GyroZ.setText(gyroEntity.GyroZ);
                 break;
             case Sensor.TYPE_PRESSURE:  //気圧計
                 pressure = String.valueOf(event.values[0]);
@@ -497,6 +478,14 @@ private int SaveCounter = 0;
             }
         });
 
+        NextButton = (Button)findViewById(R.id.NextButton);
+        NextButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                finish();
+            }
+        });
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -542,7 +531,9 @@ private int SaveCounter = 0;
     }
 
     public void InitLocalFile(){
-        String sdPath = Environment.getExternalStorageDirectory().getPath() + "/sample2.txt";
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("MM'_'DD'_'kk'_'mm");
+        String sdPath = Environment.getExternalStorageDirectory().getPath() + "/Data"+sdf.format(date).toString()+ ".csv";
         String sdCardState = Environment.getExternalStorageState();
         File file = new File(sdPath);
         file.getParentFile().mkdir();

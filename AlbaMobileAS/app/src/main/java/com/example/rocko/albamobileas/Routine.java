@@ -29,11 +29,9 @@ public class Routine {
                     + FE.acceEntity.AcceX + "," + FE.acceEntity.AcceY + "," + FE.acceEntity.AcceZ + ","
                     + FE.gyroEntity.GyroX + "," + FE.gyroEntity.GyroY + "," + FE.gyroEntity.GyroZ + ","
                     + FE.gpsEntity.Latitude + "," + FE.gpsEntity.Longitude + "," + FE.gpsEntity.Speed + "," + FE.gpsEntity.Accuracy + ","
-                    + FE.pressure + "\n\r";
+                    + FE.pressure + "\n";
             try {
                 fos.write(saveString.getBytes());
-                fos.flush();
-                fos.close();
 
             }catch (Exception exc){
                 exc.printStackTrace();
