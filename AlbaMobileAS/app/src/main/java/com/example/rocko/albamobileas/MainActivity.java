@@ -47,8 +47,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     private double _progressBarStatusLeft = 0;
     private double _progressBarStatusRight = 0;
     TextView DebugButton;
-    ProgressBar MpuLeft;
-    ProgressBar MpuRight;
+    ProgressBar CadenceProgress;
     TextView FlightAirSpeed;
     double flightAirSpeed = 0.0;
 
@@ -448,11 +447,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             if (action == Constants.VIEW_MPU_PROGRESS_LEFT) {
                 double msgDouble = (double) msg.obj;
                 int msgInt = (int)msgDouble;
-                MpuLeft.setProgress(msgInt);
-            } else if (action == Constants.VIEW_MPU_PROGRESS_RIGHT) {
-                double msgDouble = (double) msg.obj;
-                int msgInt = (int)msgDouble;
-                MpuRight.setProgress(msgInt);
+                CadenceProgress.setProgress(msgInt);
             } else if (action == Constants.VIEW_INPUT_AIRSPEED) {
                 double msgDouble = (double) msg.obj;
                 FlightAirSpeed.setText(String.valueOf(msgDouble));
@@ -465,13 +460,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         setContentView(R.layout.activity_flight);
 
         //region プログレスバーの設定
-        MpuLeft = (ProgressBar) findViewById(R.id.MpuLeft);
-        MpuLeft.setMax(100);
-        MpuLeft.setMinimumHeight(0);
+        CadenceProgress = (ProgressBar) findViewById(R.id.Cadence);
+        CadenceProgress.setMax(100);
+        CadenceProgress.setMinimumHeight(0);
 
-        MpuRight = (ProgressBar) findViewById(R.id.MpuRight);
-        MpuRight.setMax(100);
-        MpuRight.setMinimumHeight(0);
         //endregion
         FlightAirSpeed = (TextView) findViewById(R.id.FlightAirSpeed);
 

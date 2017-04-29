@@ -12,67 +12,12 @@
     tools:context="com.example.rocko.albamobileas.MainActivity">
 
     <ProgressBar
-        android:id="@+id/MpuLeft"
+        android:id="@+id/Cadence"
         style="@style/Widget.ProgressBar.VerticalBlue"
-        android:layout_width="190dp"
+        android:layout_width="250dp"
         android:layout_height="330dip"
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true" />
-
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
-
-        <ProgressBar
-            android:id="@+id/MpuRight"
-            style="@style/Widget.ProgressBar.VerticalRed"
-            android:layout_width="190dp"
-            android:layout_height="137dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            />
-
-        <Button
-            android:id="@+id/DebugButton"
-            android:layout_width="70dp"
-            android:layout_height="wrap_content"
-            android:background="#1e90ff"
-            android:text="Back to Debug"
-            android:layout_gravity="right"
-            android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@+id/MpuRight" />
-
-        <Button
-            android:id="@+id/NextButton"
-            android:layout_width="70dp"
-            android:layout_height="50dp"
-            android:background="#1e90ff"
-            android:text="NEXT"
-            android:layout_gravity="right"
-            android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@+id/DebugButton" />
-
-        <TextView
-            android:id="@+id/FlightAirSpeed"
-            android:layout_width="450dp"
-            android:layout_height="310dp"
-            android:layout_gravity="center_horizontal"
-            android:ellipsize="end"
-            android:maxLines="3"
-            android:text="AS"
-            android:textAllCaps="true"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="320dp"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="34dp" />
 
         <RelativeLayout
             android:layout_width="fill_parent"
@@ -80,6 +25,7 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true">
+
 
             <TextView
                 android:id="@+id/Command"
@@ -101,7 +47,45 @@
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true" />
 
+            <TextView
+                android:id="@+id/FlightAirSpeed"
+                android:layout_height="310dp"
+                android:layout_gravity="center_horizontal"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="0.0"
+                android:textAllCaps="true"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="270dp"
+                android:textAlignment="textEnd"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_width="550dp" />
+
+            <Button
+                android:id="@+id/NextButton"
+                android:layout_width="70dp"
+                android:layout_height="50dp"
+                android:background="#1e90ff"
+                android:text="NEXT"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
+
+            <Button
+                android:id="@+id/DebugButton"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:background="#1e90ff"
+                android:text="Back to Debug"
+                android:layout_gravity="left"
+                android:layout_alignBaseline="@+id/NextButton"
+                android:layout_alignBottom="@+id/NextButton"
+                android:layout_toLeftOf="@+id/NextButton"
+                android:layout_toStartOf="@+id/NextButton" />
         </RelativeLayout>
-    </RelativeLayout>
 
 </RelativeLayout>
