@@ -27,11 +27,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.*;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import android.app.Activity;
 import java.util.*;
 
@@ -100,7 +100,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     public BlueTooth blueTooth = new BlueTooth();
     private boolean isRunning = true;
 
+    private  List<FullEntity> FEList = new ArrayList<>();
 
+private int SaveCounter = 0;
 
     private BluetoothAdapter _blueAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -209,6 +211,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                                 blueHandler.sendMessage(valueMsg);
 
                                                 SetFlight(_blue);
+
                                             }
                                         }
                                     }
@@ -234,16 +237,27 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
+
                 fullEntity.gpsEntity = gpsEntity;
                 fullEntity.acceEntity  =acceEntity;
                 fullEntity.gyroEntity  =gyroEntity;
                 fullEntity.pressure = pressure;
                 fullEntity.bluetoothEntity = bluetoothEntity;
+                FullEntity fullEndEntity;
+                fullEndEntity = fullEntity.Clone();
+                FEList.add(fullEndEntity);
 
-                Routine.SaveData(fullEntity,fos);
             }
-        },3500,200);
+        },3500,350);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Routine.SaveData(FEList,fos);
+                FEList.clear();
+            }
+        },5000,10000);
     }
+
 
     private void stopThread(){
         _threadRunning = false;
@@ -356,6 +370,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     protected void onDestroy() {
         try {
             _blueSocket.close();
+
         }catch(Exception exc) {
             BlueStatus.setText("");
             AirSpeed.setText("");
@@ -527,14 +542,18 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     }
 
     public void InitLocalFile(){
-        String sdPath = Environment.getExternalStorageDirectory() + "sample.txt";
+        String sdPath = Environment.getExternalStorageDirectory().getPath() + "/sample2.txt";
         String sdCardState = Environment.getExternalStorageState();
+        File file = new File(sdPath);
+        file.getParentFile().mkdir();
+
 
         if(sdCardState.equals(Environment.MEDIA_MOUNTED)) {
             try {
                 fos = new FileOutputStream(sdPath);
+                OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
+                BufferedWriter bw = new BufferedWriter(osw);
             } catch (IOException e) {
-
             }
         }
     }
