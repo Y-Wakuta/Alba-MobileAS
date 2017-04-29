@@ -128,6 +128,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     FileOutputStream fos = null;
 
+    long startTime;
+
     //endregion
 
     @Override
@@ -135,6 +137,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
         super.onCreate(savedInstanceState);
         startMainScreen();
+        startTime = System.currentTimeMillis();
         //  Flight.setEnabled(false);
         try {
             _blueAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -234,11 +237,14 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
+
                 fullEntity.gpsEntity = gpsEntity;
                 fullEntity.acceEntity  =acceEntity;
                 fullEntity.gyroEntity  =gyroEntity;
                 fullEntity.pressure = pressure;
                 fullEntity.bluetoothEntity = bluetoothEntity;
+                long endTime  =System.currentTimeMillis();
+                fullEntity.Time = String.valueOf(endTime - startTime);
                 FullEntity fullEndEntity;
                 fullEndEntity = fullEntity.Clone();
                 FEList.add(fullEndEntity);
