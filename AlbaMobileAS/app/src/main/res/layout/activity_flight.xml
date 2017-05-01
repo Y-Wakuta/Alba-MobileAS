@@ -19,73 +19,73 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true" />
 
-        <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_alignParentTop="true"
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+
+        <TextView
+            android:id="@+id/Command"
+            android:layout_width="650dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center_horizontal"
+            android:ellipsize="end"
+            android:maxLines="3"
+            android:text=""
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#00BFFF"
+            android:textStyle="bold"
+            android:textSize="100dp"
+            android:layout_marginBottom="87dp"
+            android:layout_marginLeft="58dp"
+            android:layout_marginStart="58dp"
+            android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true">
+            android:layout_alignParentStart="true" />
 
+        <TextView
+            android:id="@+id/FlightAirSpeed"
+            android:layout_height="310dp"
+            android:layout_gravity="center_horizontal"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="0.0"
+            android:textAllCaps="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="285dp"
+            android:textAlignment="textEnd"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_width="515dp" />
 
-            <TextView
-                android:id="@+id/Command"
-                android:layout_width="650dp"
-                android:layout_height="150dp"
-                android:layout_gravity="center_horizontal"
-                android:ellipsize="end"
-                android:maxLines="3"
-                android:text=""
-                android:textAllCaps="true"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="#00BFFF"
-                android:textStyle="bold"
-                android:textSize="100dp"
-                android:layout_marginBottom="87dp"
-                android:layout_marginLeft="58dp"
-                android:layout_marginStart="58dp"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true" />
+        <Button
+            android:id="@+id/NextButton"
+            android:layout_width="70dp"
+            android:layout_height="50dp"
+            android:background="#1e90ff"
+            android:text="NEXT"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
-            <TextView
-                android:id="@+id/FlightAirSpeed"
-                android:layout_height="310dp"
-                android:layout_gravity="center_horizontal"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="0.0"
-                android:textAllCaps="true"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="#FFFFFF"
-                android:textStyle="bold"
-                android:textSize="285dp"
-                android:textAlignment="textEnd"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"
-                android:layout_width="550dp" />
-
-            <Button
-                android:id="@+id/NextButton"
-                android:layout_width="70dp"
-                android:layout_height="50dp"
-                android:background="#1e90ff"
-                android:text="NEXT"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true" />
-
-            <Button
-                android:id="@+id/DebugButton"
-                android:layout_width="70dp"
-                android:layout_height="wrap_content"
-                android:background="#1e90ff"
-                android:text="Back to Debug"
-                android:layout_gravity="left"
-                android:layout_alignBaseline="@+id/NextButton"
-                android:layout_alignBottom="@+id/NextButton"
-                android:layout_toLeftOf="@+id/NextButton"
-                android:layout_toStartOf="@+id/NextButton" />
-        </RelativeLayout>
+        <Button
+            android:id="@+id/DebugButton"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:background="#1e90ff"
+            android:text="Back to Debug"
+            android:layout_gravity="left"
+            android:layout_alignBaseline="@+id/NextButton"
+            android:layout_alignBottom="@+id/NextButton"
+            android:layout_toLeftOf="@+id/NextButton"
+            android:layout_toStartOf="@+id/NextButton" />
+    </RelativeLayout>
 
 </RelativeLayout>

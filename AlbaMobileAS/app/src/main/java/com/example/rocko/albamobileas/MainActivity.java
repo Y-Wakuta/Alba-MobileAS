@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -205,10 +206,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                                 bluetoothEntity.AirSpeed = _blue.AirSpeed;
                                                 bluetoothEntity.MpuRoll = _blue.MpuRoll;
 
-                                             /*   valueMsg = Message.obtain(blueHandler,Constants.VIEW_INPUT_MPU,msgs[0]);
+                                                valueMsg = Message.obtain(blueHandler,Constants.VIEW_INPUT_MPU,msgs[0]);
                                                 blueHandler.sendMessage(valueMsg);
                                                 valueMsg = Message.obtain(blueHandler,Constants.VIEW_INPUT_AIRSPEED,msgs[1]);
-                                                blueHandler.sendMessage(valueMsg);*/
+                                                blueHandler.sendMessage(valueMsg);
 
                                                 SetFlight(_blue);
                                             }
@@ -495,7 +496,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                     valueMsg = Message.obtain(FlightHandler, Constants.VIEW_INPUT_AIRSPEED, flightAirSpeed);
                     FlightHandler.sendMessage(valueMsg);
                     try {
-                        Thread.sleep(150);
+                        Thread.sleep(90);
                     } catch (Exception exc) {
                     }
                 }
@@ -509,6 +510,14 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         try {
             double roll = Double.parseDouble(bt.MpuRoll);
             double airSpeed = Double.parseDouble(bt.AirSpeed);
+
+            if(airSpeed <= 6.5)
+                FlightAirSpeed.setBackgroundColor(Color.BLACK);
+           else if(airSpeed > 6.5 && airSpeed < 7.6)
+                FlightAirSpeed.setBackgroundColor(Color.YELLOW);
+            else if(airSpeed >= 7.6)
+                FlightAirSpeed.setBackgroundColor(Color.GREEN);
+
             //    double cadence = Double.parseDouble(bt.Cadence);
             if (-Constants.MpuMoveDeg < roll && roll < 0)
                 _progressBarStatusLeft = -((-roll - Constants.MpuDefault) / Constants.MpuMoveDeg )* 100;
