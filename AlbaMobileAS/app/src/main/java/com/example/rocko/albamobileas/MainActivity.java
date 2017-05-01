@@ -305,6 +305,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             isRunning = true;
             _threadRunning = true;
             _blueThread.start();
+            connect.setEnabled(false);
         } else if (v.equals(Flight)) {
             isFlight = true;
             setFlightScreen();
@@ -472,6 +473,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             public void onClick(View v) {
                 isFlight = false;
                 startMainScreen();
+                connect.setEnabled(false);
             }
         });
 
