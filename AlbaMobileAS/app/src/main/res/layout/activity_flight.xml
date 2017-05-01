@@ -58,7 +58,7 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
-                android:textSize="270dp"
+                android:textSize="285dp"
                 android:textAlignment="textEnd"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentRight="true"

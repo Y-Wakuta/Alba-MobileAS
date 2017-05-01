@@ -205,10 +205,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                                 bluetoothEntity.AirSpeed = _blue.AirSpeed;
                                                 bluetoothEntity.MpuRoll = _blue.MpuRoll;
 
-                                                valueMsg = Message.obtain(blueHandler,Constants.VIEW_INPUT_MPU,msgs[0]);
+                                             /*   valueMsg = Message.obtain(blueHandler,Constants.VIEW_INPUT_MPU,msgs[0]);
                                                 blueHandler.sendMessage(valueMsg);
                                                 valueMsg = Message.obtain(blueHandler,Constants.VIEW_INPUT_AIRSPEED,msgs[1]);
-                                                blueHandler.sendMessage(valueMsg);
+                                                blueHandler.sendMessage(valueMsg);*/
 
                                                 SetFlight(_blue);
                                             }
@@ -216,7 +216,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                     }
                                 }
                             } catch (NumberFormatException NExc) {
-                                continue;
+                                break;
                             }
                             //ここにsleepを入れないと画面が固まる
                             Thread.sleep(600);
@@ -236,7 +236,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-
                 fullEntity.gpsEntity = gpsEntity;
                 fullEntity.acceEntity  =acceEntity;
                 fullEntity.gyroEntity  =gyroEntity;
@@ -491,12 +490,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                     Message valueMsg;
                     valueMsg = Message.obtain(FlightHandler, Constants.VIEW_MPU_PROGRESS_LEFT, _progressBarStatusLeft);
                     FlightHandler.sendMessage(valueMsg);
-                    valueMsg = Message.obtain(FlightHandler, Constants.VIEW_MPU_PROGRESS_RIGHT, _progressBarStatusRight);
-                    FlightHandler.sendMessage(valueMsg);
                     valueMsg = Message.obtain(FlightHandler, Constants.VIEW_INPUT_AIRSPEED, flightAirSpeed);
                     FlightHandler.sendMessage(valueMsg);
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(150);
                     } catch (Exception exc) {
                     }
                 }
@@ -507,7 +504,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     //ロール用のprogressBarの値をセットします
     void SetFlight(BluetoothEntity bt) {
-        ToneGenerator toneGenerator = new ToneGenerator(AudioManager.STREAM_SYSTEM,ToneGenerator.MAX_VOLUME);
         try {
             double roll = Double.parseDouble(bt.MpuRoll);
             double airSpeed = Double.parseDouble(bt.AirSpeed);
@@ -516,13 +512,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 _progressBarStatusLeft = -((-roll - Constants.MpuDefault) / Constants.MpuMoveDeg )* 100;
             else if (roll <= -Constants.MpuMoveDeg){
                 _progressBarStatusLeft = 100;
-                toneGenerator.startTone(toneGenerator.TONE_PROP_BEEP);
-            }
-            else if (0 <= roll && roll < Constants.MpuMoveDeg)
-                _progressBarStatusRight = ((roll - Constants.MpuDefault)/Constants.MpuMoveDeg) * 100;
-            else if (Constants.MpuMoveDeg <= roll){
-                _progressBarStatusRight = 100;
-                toneGenerator.startTone(toneGenerator.TONE_PROP_BEEP);
             }
             flightAirSpeed = airSpeed;
         }catch(Exception exc){return;}
