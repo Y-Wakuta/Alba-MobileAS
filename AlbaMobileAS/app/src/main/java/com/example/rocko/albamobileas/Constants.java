@@ -27,7 +27,7 @@ public class Constants {
 
    public static final int VIEW_SCREEN = 3;
 
-   public static final int VIEW_MPU_PROGRESS_LEFT = 4;
+   public static final int VIEW_CADENCE = 4;
 
    public static final int VIEW_MPU_PROGRESS_RIGHT = 5;
 }

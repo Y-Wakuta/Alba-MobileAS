@@ -12,40 +12,35 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.AudioManager;
-import android.media.ToneGenerator;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
-import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.os.Handler;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.*;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.util.Collection;
-import java.util.Iterator;
+
 import android.app.Activity;
+
 import java.util.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import java.util.ListIterator;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends Activity implements SensorEventListener, View.OnClickListener {
 
-    private double _progressBarStatusLeft = 0;
+    private double _cadenceFlight = 0;
     private double _progressBarStatusRight = 0;
     TextView DebugButton;
     ProgressBar CadenceProgress;
@@ -98,7 +93,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     public BlueTooth blueTooth = new BlueTooth();
     private boolean isRunning = true;
 
-    private  List<FullEntity> FEList = new ArrayList<>();
+    private List<FullEntity> FEList = new ArrayList<>();
 
     private int SaveCounter = 0;
 
@@ -155,20 +150,21 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         _blueThread = new Thread() {
             @Override
             public void run() {
-                while(_threadRunning) {
+                while (_threadRunning) {
                     Message valueMsg;
                     try {
                         try {
                             _blueSocket.close();
-                        }catch(Exception e){}
+                        } catch (Exception e) {
+                        }
                         _blueSocket = _blueDevice.createRfcommSocketToServiceRecord(Constants.MY_UUID);
                         Thread.sleep(500);
-                        try{
+                        try {
                             _blueSocket.connect();
-                            valueMsg = Message.obtain(blueHandler,Constants.VIEW_STATUS,"connected");
+                            valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, "connected");
                             blueHandler.sendMessage(valueMsg);
                             //       Flight.setEnabled(true);
-                        }catch(IOException e) {
+                        } catch (IOException e) {
                             try {
                                 _blueSocket = (BluetoothSocket) _blueDevice.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(_blueDevice, 1);
                                 _blueSocket.connect();
@@ -206,9 +202,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                                 bluetoothEntity.AirSpeed = _blue.AirSpeed;
                                                 bluetoothEntity.MpuRoll = _blue.MpuRoll;
 
-                                                valueMsg = Message.obtain(blueHandler,Constants.VIEW_INPUT_MPU,msgs[0]);
+                                                valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_MPU, msgs[0]);
                                                 blueHandler.sendMessage(valueMsg);
-                                                valueMsg = Message.obtain(blueHandler,Constants.VIEW_INPUT_AIRSPEED,msgs[1]);
+                                                valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_AIRSPEED, msgs[1]);
                                                 blueHandler.sendMessage(valueMsg);
 
                                                 SetFlight(_blue);
@@ -223,7 +219,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                             Thread.sleep(600);
                         }
                     } catch (Exception exc) {
-                        valueMsg = Message.obtain(blueHandler,Constants.VIEW_STATUS,exc.getMessage());
+                        valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, exc.getMessage());
                         blueHandler.sendMessage(valueMsg);
                         stopThread();
                         //  isRunning = false;
@@ -238,28 +234,28 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             @Override
             public void run() {
                 fullEntity.gpsEntity = gpsEntity;
-                fullEntity.acceEntity  =acceEntity;
-                fullEntity.gyroEntity  =gyroEntity;
+                fullEntity.acceEntity = acceEntity;
+                fullEntity.gyroEntity = gyroEntity;
                 fullEntity.pressure = pressure;
                 fullEntity.bluetoothEntity = bluetoothEntity;
-                long endTime  =System.currentTimeMillis();
+                long endTime = System.currentTimeMillis();
                 fullEntity.Time = String.valueOf(endTime - startTime);
                 FullEntity fullEndEntity;
                 fullEndEntity = fullEntity.Clone();
                 FEList.add(fullEndEntity);
             }
-        },3500,350);
+        }, 3500, 350);
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                Routine.SaveData(FEList,fos);
+                Routine.SaveData(FEList, fos);
                 FEList.clear();
             }
-        },5000,10000);
+        }, 5000, 10000);
     }
 
 
-    private void stopThread(){
+    private void stopThread() {
         _threadRunning = false;
     }
 
@@ -281,7 +277,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         //region Bluetooth用オブジェクト
         AirSpeed = (TextView) findViewById(R.id.textViewAirSpeed);
         BlueStatus = (TextView) findViewById(R.id.textViewBlueStatus);
-        MpuRoll = (TextView)findViewById(R.id.textViewMpuRoll);
+        MpuRoll = (TextView) findViewById(R.id.textViewMpuRoll);
         //endregion
 
         //region 画面遷移用オブジェクト
@@ -352,7 +348,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         try {
             fos.flush();
             fos.close();
-        }catch (IOException exc){}
+        } catch (IOException exc) {
+        }
 
         //region Bluetooth用処理
         isRunning = false;
@@ -364,7 +361,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         try {
             _blueSocket.close();
 
-        }catch(Exception exc) {
+        } catch (Exception exc) {
             BlueStatus.setText("");
             AirSpeed.setText("");
         }
@@ -411,12 +408,15 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 gpsEntity.Accuracy = String.valueOf(location.getAccuracy());
                 Accuracy.setText(gpsEntity.Accuracy);
             }
+
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
             }
+
             @Override
             public void onProviderEnabled(String provider) {
             }
+
             @Override
             public void onProviderDisabled(String provider) {
             }
@@ -432,22 +432,22 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             String msgStr = (String) msg.obj;
             if (action == Constants.VIEW_INPUT_MPU) {
                 MpuRoll.setText(msgStr);
-            }else if(action== Constants.VIEW_INPUT_AIRSPEED){
+            } else if (action == Constants.VIEW_INPUT_AIRSPEED) {
                 AirSpeed.setText(msgStr);
-            }else if (action == Constants.VIEW_STATUS) {
+            } else if (action == Constants.VIEW_STATUS) {
                 BlueStatus.setText(msgStr);
-            }else if(action == Constants.VIEW_SCREEN){
+            } else if (action == Constants.VIEW_SCREEN) {
             }
         }
     };
 
-    Handler FlightHandler = new Handler(){
+    Handler FlightHandler = new Handler() {
         @Override
-        public void handleMessage(Message msg){
+        public void handleMessage(Message msg) {
             int action = msg.what;
-            if (action == Constants.VIEW_MPU_PROGRESS_LEFT) {
+            if (action == Constants.VIEW_CADENCE) {
                 double msgDouble = (double) msg.obj;
-                int msgInt = (int)msgDouble;
+                int msgInt = (int) msgDouble;
                 CadenceProgress.setProgress(msgInt);
             } else if (action == Constants.VIEW_INPUT_AIRSPEED) {
                 double msgDouble = (double) msg.obj;
@@ -478,10 +478,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             }
         });
 
-        NextButton = (Button)findViewById(R.id.NextButton);
-        NextButton.setOnClickListener(new View.OnClickListener(){
+        NextButton = (Button) findViewById(R.id.NextButton);
+        NextButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 finish();
             }
         });
@@ -489,9 +489,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while(isFlight){
+                while (isFlight) {
                     Message valueMsg;
-                    valueMsg = Message.obtain(FlightHandler, Constants.VIEW_MPU_PROGRESS_LEFT, _progressBarStatusLeft);
+                    valueMsg = Message.obtain(FlightHandler, Constants.VIEW_CADENCE, _cadenceFlight);
                     FlightHandler.sendMessage(valueMsg);
                     valueMsg = Message.obtain(FlightHandler, Constants.VIEW_INPUT_AIRSPEED, flightAirSpeed);
                     FlightHandler.sendMessage(valueMsg);
@@ -508,39 +508,40 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     //ロール用のprogressBarの値をセットします
     void SetFlight(BluetoothEntity bt) {
         try {
-            double roll = Double.parseDouble(bt.MpuRoll);
             double airSpeed = Double.parseDouble(bt.AirSpeed);
+            double cadence = Double.parseDouble(bt.Cadence);
 
-            if(airSpeed <= 6.5)
+            if (airSpeed <= 6.5)
                 FlightAirSpeed.setBackgroundColor(Color.BLACK);
-           else if(airSpeed > 6.5 && airSpeed < 7.6)
+            else if (airSpeed > 6.5 && airSpeed < 7.6)
                 FlightAirSpeed.setBackgroundColor(Color.YELLOW);
-            else if(airSpeed >= 7.6)
+            else if (airSpeed >= 7.6)
                 FlightAirSpeed.setBackgroundColor(Color.GREEN);
 
-            //    double cadence = Double.parseDouble(bt.Cadence);
-            if (-Constants.MpuMoveDeg < roll && roll < 0)
-                _progressBarStatusLeft = -((-roll - Constants.MpuDefault) / Constants.MpuMoveDeg )* 100;
-            else if (roll <= -Constants.MpuMoveDeg){
-                _progressBarStatusLeft = 100;
-            }
+            if (_cadenceFlight < 0)
+                _cadenceFlight = 0;
+            if (_cadenceFlight >= 100)
+                _cadenceFlight = 100;
+            _cadenceFlight = cadence;
             flightAirSpeed = airSpeed;
-        }catch(Exception exc){return;}
+        } catch (Exception exc) {
+            return;
+        }
     }
 
-    public void InitLocalFile(){
+    public void InitLocalFile() {
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("MM'_'DD'_'kk'_'mm");
-        String sdPath = Environment.getExternalStorageDirectory().getPath() + "/Data"+sdf.format(date).toString()+ ".csv";
+        String sdPath = Environment.getExternalStorageDirectory().getPath() + "/Data" + sdf.format(date).toString() + ".csv";
         String sdCardState = Environment.getExternalStorageState();
         File file = new File(sdPath);
         file.getParentFile().mkdir();
 
 
-        if(sdCardState.equals(Environment.MEDIA_MOUNTED)) {
+        if (sdCardState.equals(Environment.MEDIA_MOUNTED)) {
             try {
                 fos = new FileOutputStream(sdPath);
-                OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
+                OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
                 BufferedWriter bw = new BufferedWriter(osw);
             } catch (IOException e) {
             }
