@@ -194,11 +194,12 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                     if (msgline.length > 1) {
                                         for (int i = 0; i < msgline.length && i < 1; i++) {
                                             String[] msgs = msgline[i].split(",", 0);
-                                            if (msgs.length == 3) {
+                                            if (msgs.length == 4) {
 
                                                 _blue.MpuRoll = msgs[0];
                                                 _blue.AirSpeed = msgs[1];
-                                                _blue.msg = msgs[2];
+                                                _blue.Cadence = msgs[2];
+                                                _blue.msg = msgs[3];
                                                 bluetoothEntity.AirSpeed = _blue.AirSpeed;
                                                 bluetoothEntity.MpuRoll = _blue.MpuRoll;
 
