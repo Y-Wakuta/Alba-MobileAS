@@ -194,7 +194,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                     if (msgline.length > 1) {
                                         for (int i = 0; i < msgline.length && i < 1; i++) {
                                             String[] msgs = msgline[i].split(",", 0);
-                                            if (msgs.length == 4) {
+                                            if (4 == msgs.length) {
 
                                                 _blue.MpuRoll = msgs[0];
                                                 _blue.AirSpeed = msgs[1];
