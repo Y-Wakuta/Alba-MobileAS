@@ -217,7 +217,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                 break;
                             }
                             //ここにsleepを入れないと画面が固まる
-                            Thread.sleep(600);
+                            Thread.sleep(450);
                         }
                     } catch (Exception exc) {
                         valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, exc.getMessage());
@@ -349,6 +349,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         try {
             fos.flush();
             fos.close();
+            if(_blueSocket != null)
+            _blueSocket.close();
         } catch (IOException exc) {
         }
 
