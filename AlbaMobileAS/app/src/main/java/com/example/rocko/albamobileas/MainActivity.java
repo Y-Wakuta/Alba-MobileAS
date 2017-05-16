@@ -525,6 +525,13 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 _cadenceFlight = 0;
             if (_cadenceFlight >= 100)
                 _cadenceFlight = 100;
+            if(_cadenceFlight < 70)
+                CadenceProgress.setBackgroundColor(Color.YELLOW);
+            else if(_cadenceFlight >= 70)
+                CadenceProgress.setBackgroundColor(Color.GREEN);
+            else
+                CadenceProgress.setProgress(Color.BLUE);
+            
             _cadenceFlight = cadence;
             flightAirSpeed = airSpeed;
         } catch (Exception exc) {
