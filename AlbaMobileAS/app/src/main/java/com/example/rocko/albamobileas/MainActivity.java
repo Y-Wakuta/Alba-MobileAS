@@ -554,7 +554,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             try {
                 fos = new FileOutputStream(sdPath);
                 OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
-                BufferedWriter bw = new BufferedWriter(osw);
             } catch (IOException e) {
             }
         }
