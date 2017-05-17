@@ -119,8 +119,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     BluetoothEntity bluetoothEntity = new BluetoothEntity();
     //endregion
 
-    OutputStream mmOutputStream = null;
-
     FileOutputStream fos = null;
 
     long startTime;
@@ -178,46 +176,50 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                             }
                             return;
                         }
-                        InputStream mmInStream = _blueSocket.getInputStream();
-                        mmOutputStream = _blueSocket.getOutputStream();
+                        InputStream mmInStream = null;
+                        try {
+                            mmInStream = _blueSocket.getInputStream();
 
-                        byte[] buffer = new byte[1024];
-                        int bytes = 0;
-                        BluetoothEntity _blue = new BluetoothEntity();
-                        while (isRunning) {
-                            try {
-                                //inPutStreamの読み込み
-                                bytes = mmInStream.read(buffer);
-                                String readMsg = new String(buffer, 0, bytes);
-                                if (readMsg.trim() != null && !readMsg.trim().equals("")) {
-                                    String[] msgline = readMsg.split(",\n,", 0);
-                                    if (msgline.length > 1) {
-                                        for (int i = 0; i < msgline.length && i < 1; i++) {
-                                            String[] msgs = msgline[i].split(",", 0);
-                                            if (4 == msgs.length) {
+                            byte[] buffer = new byte[1024];
+                            int bytes = 0;
+                            BluetoothEntity _blue = new BluetoothEntity();
+                            while (isRunning) {
+                                try {
+                                    //inPutStreamの読み込み
+                                    bytes = mmInStream.read(buffer);
+                                    String readMsg = new String(buffer, 0, bytes);
+                                    if (readMsg.trim() != null && !readMsg.trim().equals("")) {
+                                        String[] msgline = readMsg.split(",\n,", 0);
+                                        if (msgline.length > 1) {
+                                            for (int i = 0; i < msgline.length && i < 1; i++) {
+                                                String[] msgs = msgline[i].split(",", 0);
+                                                if (4 == msgs.length) {
 
-                                                _blue.MpuRoll = msgs[0];
-                                                _blue.AirSpeed = msgs[1];
-                                                _blue.Cadence = msgs[2];
-                                                _blue.msg = msgs[3];
-                                                bluetoothEntity.AirSpeed = _blue.AirSpeed;
-                                                bluetoothEntity.MpuRoll = _blue.MpuRoll;
+                                                    _blue.MpuRoll = msgs[0];
+                                                    _blue.AirSpeed = msgs[1];
+                                                    _blue.Cadence = msgs[2];
+                                                    _blue.msg = msgs[3];
+                                                    bluetoothEntity.AirSpeed = _blue.AirSpeed;
+                                                    bluetoothEntity.MpuRoll = _blue.MpuRoll;
 
-                                                valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_MPU, msgs[0]);
-                                                blueHandler.sendMessage(valueMsg);
-                                                valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_AIRSPEED, msgs[1]);
-                                                blueHandler.sendMessage(valueMsg);
+                                                    valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_MPU, msgs[0]);
+                                                    blueHandler.sendMessage(valueMsg);
+                                                    valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_AIRSPEED, msgs[1]);
+                                                    blueHandler.sendMessage(valueMsg);
 
-                                                SetFlight(_blue);
+                                                    SetFlight(_blue);
+                                                }
                                             }
                                         }
                                     }
+                                } catch (NumberFormatException NExc) {
+                                    break;
                                 }
-                            } catch (NumberFormatException NExc) {
-                                break;
+                                //ここにsleepを入れないと画面が固まる
+                                Thread.sleep(450);
                             }
-                            //ここにsleepを入れないと画面が固まる
-                            Thread.sleep(450);
+                        } finally {
+                            mmInStream.close();
                         }
                     } catch (Exception exc) {
                         valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, exc.getMessage());
@@ -349,8 +351,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         try {
             fos.flush();
             fos.close();
-            if(_blueSocket != null)
-            _blueSocket.close();
+            if (_blueSocket != null)
+                _blueSocket.close();
         } catch (IOException exc) {
         }
 
@@ -525,13 +527,13 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 _cadenceFlight = 0;
             if (_cadenceFlight >= 100)
                 _cadenceFlight = 100;
-            if(_cadenceFlight < 70)
+            if (_cadenceFlight < 70)
                 CadenceProgress.setBackgroundColor(Color.YELLOW);
-            else if(_cadenceFlight >= 70)
+            else if (_cadenceFlight >= 70)
                 CadenceProgress.setBackgroundColor(Color.GREEN);
             else
                 CadenceProgress.setProgress(Color.BLUE);
-            
+
             _cadenceFlight = cadence;
             flightAirSpeed = airSpeed;
         } catch (Exception exc) {
