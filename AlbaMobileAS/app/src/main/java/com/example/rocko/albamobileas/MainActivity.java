@@ -24,7 +24,6 @@ import android.os.Handler;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.*;
 import java.io.OutputStreamWriter;
 
@@ -94,8 +93,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     private boolean isRunning = true;
 
     private List<FullEntity> FEList = new ArrayList<>();
-
-    private int SaveCounter = 0;
 
     private BluetoothAdapter _blueAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -400,8 +397,9 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     @Override
     public void onStart() {
         super.onStart();
-
-        GPSListener = new LocationListener() {
+        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,
+                new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 gpsEntity.Latitude = String.valueOf(location.getLatitude());
@@ -425,8 +423,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             @Override
             public void onProviderDisabled(String provider) {
             }
-        };
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        });
         //endregion
     }
 
