@@ -31,7 +31,7 @@ public class Routine {
                     + FE.acceEntity.AcceX + "," + FE.acceEntity.AcceY + "," + FE.acceEntity.AcceZ + ","
                     + FE.gyroEntity.GyroX + "," + FE.gyroEntity.GyroY + "," + FE.gyroEntity.GyroZ + ","
                     + FE.gpsEntity.Latitude + "," + FE.gpsEntity.Longitude + "," + FE.gpsEntity.Speed + "," + FE.gpsEntity.Accuracy + ","
-                    + FE.pressure + "\n";
+                    + FE.pressure + "," + FE.bluetoothEntity.Cadence + "," + FE.bluetoothEntity.AirSpeed + "," + FE.bluetoothEntity.MpuRoll + "\n";
             try {
                 if (fos != null)
                     fos.write(saveString.getBytes());

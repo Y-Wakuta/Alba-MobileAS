@@ -215,7 +215,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                     break;
                                 }
                                 //ここにsleepを入れないと画面が固まる
-                                Thread.sleep(450);
+                                Thread.sleep(380);
                             }
                         } finally {
                             mmInStream.close();
