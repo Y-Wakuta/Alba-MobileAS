@@ -21,7 +21,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.os.Handler;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.*;
@@ -45,6 +44,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     ProgressBar CadenceProgress;
     TextView FlightAirSpeed;
     double flightAirSpeed = 0.0;
+    public boolean IsAppRunning = false;
 
     boolean _threadRunning = true;
     boolean isFlight = false;
@@ -128,6 +128,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         super.onCreate(savedInstanceState);
         startMainScreen();
         startTime = System.currentTimeMillis();
+        IsAppRunning = true;
         //  Flight.setEnabled(false);
         try {
             _blueAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -161,6 +162,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                             //       Flight.setEnabled(true);
                         } catch (IOException e) {
                             try {
+                                if (_blueSocket.isConnected())
+                                    _blueSocket.close();
                                 _blueSocket = (BluetoothSocket) _blueDevice.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(_blueDevice, 1);
                                 _blueSocket.connect();
                                 valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, "connected");
@@ -189,16 +192,15 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                         String[] msgline = readMsg.split(",\n,", 0);
                                         if (msgline.length > 1) {
                                             for (int i = 0; i < msgline.length && i < 1; i++) {
-                                                String[] msgs = msgline[i].split(",", 0);
-                                                if (4 == msgs.length) {
+                                                String[] msgs = msgline[i].split(",", 6);
+                                                if (3 == msgs.length) {
 
                                                     _blue.MpuRoll = msgs[0];
                                                     _blue.AirSpeed = msgs[1];
+                                                    if (msgs[2] == "")
+                                                        msgs[2] = "0.0";
                                                     _blue.Cadence = msgs[2];
-                                                    _blue.msg = msgs[3];
                                                     bluetoothEntity.AirSpeed = _blue.AirSpeed;
-                                                    bluetoothEntity.MpuRoll = _blue.MpuRoll;
-
                                                     valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_MPU, msgs[0]);
                                                     blueHandler.sendMessage(valueMsg);
                                                     valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_AIRSPEED, msgs[1]);
@@ -248,7 +250,8 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                Routine.SaveData(FEList, fos);
+                if (IsAppRunning)
+                    Routine.SaveData(FEList, fos);
                 FEList.clear();
             }
         }, 5000, 10000);
@@ -344,7 +347,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         acceSensor.unregisterListener(this);
         gyroSensor.unregisterListener(this);
         pressSensor.unregisterListener(this);
-
+        IsAppRunning = false;
         try {
             fos.flush();
             fos.close();
@@ -397,33 +400,33 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     @Override
     public void onStart() {
         super.onStart();
-        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
                 new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                gpsEntity.Latitude = String.valueOf(location.getLatitude());
-                Latitude.setText(gpsEntity.Latitude);
-                gpsEntity.Longitude = String.valueOf(location.getLongitude());
-                Longitude.setText(gpsEntity.Longitude);
-                gpsEntity.Speed = String.valueOf(location.getSpeed());
-                Speed.setText(gpsEntity.Speed);
-                gpsEntity.Accuracy = String.valueOf(location.getAccuracy());
-                Accuracy.setText(gpsEntity.Accuracy);
-            }
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        gpsEntity.Latitude = String.valueOf(location.getLatitude());
+                        Latitude.setText(gpsEntity.Latitude);
+                        gpsEntity.Longitude = String.valueOf(location.getLongitude());
+                        Longitude.setText(gpsEntity.Longitude);
+                        gpsEntity.Speed = String.valueOf(location.getSpeed());
+                        Speed.setText(gpsEntity.Speed);
+                        gpsEntity.Accuracy = String.valueOf(location.getAccuracy());
+                        Accuracy.setText(gpsEntity.Accuracy);
+                    }
 
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-            }
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) {
+                    }
 
-            @Override
-            public void onProviderEnabled(String provider) {
-            }
+                    @Override
+                    public void onProviderEnabled(String provider) {
+                    }
 
-            @Override
-            public void onProviderDisabled(String provider) {
-            }
-        });
+                    @Override
+                    public void onProviderDisabled(String provider) {
+                    }
+                });
         //endregion
     }
 
@@ -511,7 +514,12 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     void SetFlight(BluetoothEntity bt) {
         try {
             double airSpeed = Double.parseDouble(bt.AirSpeed);
-            double cadence = Double.parseDouble(bt.Cadence);
+            double cadence;
+            try {
+                cadence = Double.parseDouble(bt.Cadence);
+            } catch (Exception ex) {
+                cadence = 0.0;
+            }
 
             if (airSpeed <= 6.5)
                 FlightAirSpeed.setBackgroundColor(Color.BLACK);
@@ -540,7 +548,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     public void InitLocalFile() {
         Date date = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("MM'_'DD'_'kk'_'mm");
+        SimpleDateFormat sdf = new SimpleDateFormat("MM'_'dd'_'hh'_'mm");
         String sdPath = Environment.getExternalStorageDirectory().getPath() + "/Data" + sdf.format(date).toString() + ".csv";
         String sdCardState = Environment.getExternalStorageState();
         File file = new File(sdPath);
@@ -551,6 +559,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             try {
                 fos = new FileOutputStream(sdPath);
                 OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
+                BufferedWriter bw = new BufferedWriter(osw);
             } catch (IOException e) {
             }
         }
