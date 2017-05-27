@@ -201,7 +201,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                                         msgs[2] = "0.0";
                                                     _blue.Cadence = msgs[2];
                                                     bluetoothEntity.AirSpeed = _blue.AirSpeed;
-                                                    valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_MPU, msgs[0]);
+                                                    valueMsg = Message.obtain(blueHandler, Constants.VIEW_CADENCE, msgs[2]);
                                                     blueHandler.sendMessage(valueMsg);
                                                     valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_AIRSPEED, msgs[1]);
                                                     blueHandler.sendMessage(valueMsg);
@@ -215,7 +215,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                                     break;
                                 }
                                 //ここにsleepを入れないと画面が固まる
-                                Thread.sleep(380);
+                                Thread.sleep(400);
                             }
                         } finally {
                             mmInStream.close();
@@ -435,7 +435,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         public void handleMessage(Message msg) {
             int action = msg.what;
             String msgStr = (String) msg.obj;
-            if (action == Constants.VIEW_INPUT_MPU) {
+            if (action == Constants.VIEW_CADENCE) {
                 MpuRoll.setText(msgStr);
             } else if (action == Constants.VIEW_INPUT_AIRSPEED) {
                 AirSpeed.setText(msgStr);
@@ -514,32 +514,31 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     void SetFlight(BluetoothEntity bt) {
         try {
             double airSpeed = Double.parseDouble(bt.AirSpeed);
-            double cadence;
+
+            if(FlightAirSpeed != null){
+                if (airSpeed <= 6.5)
+                    FlightAirSpeed.setBackgroundColor(Color.BLACK);
+                else if (airSpeed > 6.5 && airSpeed < 7.6)
+                    FlightAirSpeed.setBackgroundColor(Color.YELLOW);
+                else if (airSpeed >= 7.6)
+                    FlightAirSpeed.setBackgroundColor(Color.GREEN);
+            }
+
+/*
+            double cadence = 0.0;
             try {
                 cadence = Double.parseDouble(bt.Cadence);
             } catch (Exception ex) {
-                cadence = 0.0;
+                //   cadence = 0.0;
             }
-
-            if (airSpeed <= 6.5)
-                FlightAirSpeed.setBackgroundColor(Color.BLACK);
-            else if (airSpeed > 6.5 && airSpeed < 7.6)
-                FlightAirSpeed.setBackgroundColor(Color.YELLOW);
-            else if (airSpeed >= 7.6)
-                FlightAirSpeed.setBackgroundColor(Color.GREEN);
 
             if (_cadenceFlight < 0)
                 _cadenceFlight = 0;
             if (_cadenceFlight >= 100)
                 _cadenceFlight = 100;
             if (_cadenceFlight < 70)
-                CadenceProgress.setBackgroundColor(Color.YELLOW);
-            else if (_cadenceFlight >= 70)
-                CadenceProgress.setBackgroundColor(Color.GREEN);
-            else
-                CadenceProgress.setProgress(Color.BLUE);
 
-            _cadenceFlight = cadence;
+            _cadenceFlight = cadence;*/
             flightAirSpeed = airSpeed;
         } catch (Exception exc) {
             return;
