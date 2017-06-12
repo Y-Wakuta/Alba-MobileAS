@@ -9,6 +9,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.usb.UsbManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -27,6 +28,12 @@ import java.io.*;
 import java.io.OutputStreamWriter;
 
 import android.app.Activity;
+
+import com.hoho.android.usbserial.driver.UsbSerialDriver;
+import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.hoho.android.usbserial.driver.*;
+import android.hardware.usb.UsbDeviceConnection;
+import java.lang.*;
 
 import java.util.*;
 import java.text.SimpleDateFormat;
@@ -130,107 +137,39 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         startTime = System.currentTimeMillis();
         IsAppRunning = true;
         //  Flight.setEnabled(false);
-        try {
-            _blueAdapter = BluetoothAdapter.getDefaultAdapter();
-            BlueStatus.setText("Searching Device.");
-            Set<BluetoothDevice> devices = _blueAdapter.getBondedDevices();
-            for (BluetoothDevice device : devices) {
-                if (device.getName().equals(Constants.DEVICE_NAME)) {
-                    _blueDevice = device;
-                }
-            }
-        } catch (Exception exc) {
-            BlueStatus.setText("failed");
-            connectFlg = false;
+
+        // Find all available drivers from attached devices.
+        UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
+        if (availableDrivers.isEmpty()) {
+            return;
         }
-        _blueThread = new Thread() {
-            @Override
-            public void run() {
-                while (_threadRunning) {
-                    Message valueMsg;
-                    try {
-                        try {
-                            _blueSocket.close();
-                        } catch (Exception e) {
-                        }
-                        _blueSocket = _blueDevice.createRfcommSocketToServiceRecord(Constants.MY_UUID);
-                        Thread.sleep(500);
-                        try {
-                            _blueSocket.connect();
-                            valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, "connected");
-                            blueHandler.sendMessage(valueMsg);
-                            //       Flight.setEnabled(true);
-                        } catch (IOException e) {
-                            try {
-                                if (_blueSocket.isConnected())
-                                    _blueSocket.close();
-                                _blueSocket = (BluetoothSocket) _blueDevice.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(_blueDevice, 1);
-                                _blueSocket.connect();
-                                valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, "connected");
-                                blueHandler.sendMessage(valueMsg);
-                                // Flight.setEnabled(true);
-                                connectFlg = true;
-                            } catch (IOException ie) {
-                                valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, "connection failed");
-                                blueHandler.sendMessage(valueMsg);
-                            }
-                            return;
-                        }
-                        InputStream mmInStream = null;
-                        try {
-                            mmInStream = _blueSocket.getInputStream();
 
-                            byte[] buffer = new byte[1024];
-                            int bytes = 0;
-                            BluetoothEntity _blue = new BluetoothEntity();
-                            while (isRunning) {
-                                try {
-                                    //inPutStreamの読み込み
-                                    bytes = mmInStream.read(buffer);
-                                    String readMsg = new String(buffer, 0, bytes);
-                                    if (readMsg.trim() != null && !readMsg.trim().equals("")) {
-                                        String[] msgline = readMsg.split(",\n,", 0);
-                                        if (msgline.length > 1) {
-                                            for (int i = 0; i < msgline.length && i < 1; i++) {
-                                                String[] msgs = msgline[i].split(",", 6);
-                                                if (3 == msgs.length) {
+// Open a connection to the first available driver.
+        UsbSerialDriver driver = availableDrivers.get(0);
+        UsbDeviceConnection connection = manager.openDevice(driver.getDevice());
+        if (connection == null) {
+            // You probably need to call UsbManager.requestPermission(driver.getDevice(), ..)
+            return;
+        }
 
-                                                    _blue.MpuRoll = msgs[0];
-                                                    _blue.AirSpeed = msgs[1];
-                                                    if (msgs[2] == "")
-                                                        msgs[2] = "0.0";
-                                                    _blue.Cadence = msgs[2];
-                                                    bluetoothEntity.AirSpeed = _blue.AirSpeed;
-                                                    valueMsg = Message.obtain(blueHandler, Constants.VIEW_CADENCE, msgs[2]);
-                                                    blueHandler.sendMessage(valueMsg);
-                                                    valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_AIRSPEED, msgs[1]);
-                                                    blueHandler.sendMessage(valueMsg);
+// Read some data! Most have just one port (port 0).
+        UsbSerialPort port = driver.getPorts().get(0);
+        try {
+            port.open(connection);
+            port.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
 
-                                                    SetFlight(_blue);
-                                                }
-                                            }
-                                        }
-                                    }
-                                } catch (NumberFormatException NExc) {
-                                    break;
-                                }
-                                //ここにsleepを入れないと画面が固まる
-                                Thread.sleep(400);
-                            }
-                        } finally {
-                            mmInStream.close();
-                        }
-                    } catch (Exception exc) {
-                        valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, exc.getMessage());
-                        blueHandler.sendMessage(valueMsg);
-                        stopThread();
-                        //  isRunning = false;
-                        // connectFlg = false;
-                        return;
-                    }
-                }
-            }
-        };
+            byte buffer[] = new byte[16];
+            int numBytesRead = port.read(buffer, 1000);
+           // Log.d(TAG, "Read " + numBytesRead + " bytes.");
+        } catch (IOException e) {
+            // Deal with error.
+        } finally {
+            try {
+                port.close();
+            }catch (Exception exc){}
+        }
+
         InitLocalFile();
         timer.schedule(new TimerTask() {
             @Override
