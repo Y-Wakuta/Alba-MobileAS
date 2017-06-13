@@ -1,14 +1,14 @@
 package com.example.rocko.albamobileas;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.*;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.os.Handler;
+import android.content.BroadcastReceiver;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +33,9 @@ import android.app.Activity;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
 import com.hoho.android.usbserial.driver.*;
+
 import android.hardware.usb.UsbDeviceConnection;
+
 import java.lang.*;
 
 import java.util.*;
@@ -94,18 +97,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     private boolean connectFlg = false;
 
-    private Thread _blueThread;
-
-    public BlueTooth blueTooth = new BlueTooth();
     private boolean isRunning = true;
 
     private List<FullEntity> FEList = new ArrayList<>();
 
-    private BluetoothAdapter _blueAdapter = BluetoothAdapter.getDefaultAdapter();
-
-    private BluetoothDevice _blueDevice;
-
-    private BluetoothSocket _blueSocket;
 
     public String StatusText;
 
@@ -129,29 +124,70 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     //endregion
 
+    private static final String ACTION_USB_PERMISSION =
+            "com.android.example.USB_PERMISSION";
+    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                synchronized (this) {
+                    UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (device != null) {
+                            //call method to set up device communication
+                        }
+                    } else {
+                        //  Log.d(TAG, "permission denied for device " + device);
+                    }
+                }
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
         startMainScreen();
         startTime = System.currentTimeMillis();
         IsAppRunning = true;
-        //  Flight.setEnabled(false);
+        Message valueMsg;
 
         // Find all available drivers from attached devices.
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
+
+        PendingIntent mPermissionIntent = PendingIntent.getBroadcast(MainActivity.this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        registerReceiver(mUsbReceiver, filter);
+        //-----------------------------------------------
+        ProbeTable customTable = new ProbeTable();
+        customTable.addProduct(3368, 0204, CdcAcmSerialDriver.class);
+        UsbSerialProber prober = new UsbSerialProber(customTable);
+        List<UsbSerialDriver> availableDrivers = prober.findAllDrivers(manager);
+        //-----------------------------------------------
+        //List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
         if (availableDrivers.isEmpty()) {
             return;
         }
-
 // Open a connection to the first available driver.
         UsbSerialDriver driver = availableDrivers.get(0);
-        UsbDeviceConnection connection = manager.openDevice(driver.getDevice());
+        UsbDevice device = driver.getDevice();
+        manager.requestPermission(device, mPermissionIntent);
+        if (!manager.hasPermission(device)) {
+            valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, "pd");
+            blueHandler.sendMessage(valueMsg);
+        }
+        UsbDeviceConnection connection = manager.openDevice(device);
         if (connection == null) {
+
             // You probably need to call UsbManager.requestPermission(driver.getDevice(), ..)
             return;
         }
+        valueMsg = Message.obtain(blueHandler, Constants.VIEW_STATUS, "test3");
+        blueHandler.sendMessage(valueMsg);
 
 // Read some data! Most have just one port (port 0).
         UsbSerialPort port = driver.getPorts().get(0);
@@ -161,13 +197,16 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
             byte buffer[] = new byte[16];
             int numBytesRead = port.read(buffer, 1000);
-           // Log.d(TAG, "Read " + numBytesRead + " bytes.");
+            // Log.d(TAG, "Read " + numBytesRead + " bytes.");
+            valueMsg = Message.obtain(blueHandler, Constants.VIEW_INPUT_AIRSPEED, numBytesRead);
+            blueHandler.sendMessage(valueMsg);
         } catch (IOException e) {
             // Deal with error.
         } finally {
             try {
                 port.close();
-            }catch (Exception exc){}
+            } catch (Exception exc) {
+            }
         }
 
         InitLocalFile();
@@ -243,7 +282,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             //Threadを起動
             isRunning = true;
             _threadRunning = true;
-            _blueThread.start();
             connect.setEnabled(false);
         } else if (v.equals(Flight)) {
             isFlight = true;
@@ -287,13 +325,11 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         gyroSensor.unregisterListener(this);
         pressSensor.unregisterListener(this);
         IsAppRunning = false;
-        try {
-            fos.flush();
-            fos.close();
-            if (_blueSocket != null)
-                _blueSocket.close();
-        } catch (IOException exc) {
-        }
+        // try {
+        //  fos.flush();
+        //  fos.close();
+        // } catch (IOException exc) {
+        //}
 
         //region Bluetooth用処理
         isRunning = false;
@@ -302,13 +338,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
     @Override
     protected void onDestroy() {
-        try {
-            _blueSocket.close();
-
-        } catch (Exception exc) {
-            BlueStatus.setText("");
-            AirSpeed.setText("");
-        }
         super.onDestroy();
     }
 
@@ -454,7 +483,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         try {
             double airSpeed = Double.parseDouble(bt.AirSpeed);
 
-            if(FlightAirSpeed != null){
+            if (FlightAirSpeed != null) {
                 if (airSpeed <= 6.5)
                     FlightAirSpeed.setBackgroundColor(Color.BLACK);
                 else if (airSpeed > 6.5 && airSpeed < 7.6)
@@ -495,7 +524,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
 
         if (sdCardState.equals(Environment.MEDIA_MOUNTED)) {
             try {
-                fos = new FileOutputStream(sdPath);
+
                 OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
                 BufferedWriter bw = new BufferedWriter(osw);
             } catch (IOException e) {

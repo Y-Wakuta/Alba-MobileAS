@@ -55,7 +55,7 @@
             android:textAllCaps="true"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#a0a0ff"
-            android:textSize="22dp"
+            android:textSize="6dp"
             android:textStyle="bold" />
         <TextView
         android:id="@+id/textViewAirSpeed"
