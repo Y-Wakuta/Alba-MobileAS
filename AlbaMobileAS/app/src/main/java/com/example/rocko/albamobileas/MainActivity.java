@@ -125,7 +125,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     //endregion
 
     private static final String ACTION_USB_PERMISSION =
-            "com.android.example.USB_PERMISSION";
+            "main.java.com.example.rocko.albamobileas.USB_PERMISSION";
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 
         public void onReceive(Context context, Intent intent) {
