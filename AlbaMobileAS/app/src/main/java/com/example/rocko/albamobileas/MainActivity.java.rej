@@ -1,0 +1,9 @@
+diff a/AlbaMobileAS/app/src/main/java/com/example/rocko/albamobileas/MainActivity.java b/AlbaMobileAS/app/src/main/java/com/example/rocko/albamobileas/MainActivity.java	(rejected hunks)
+@@ -554,7 +554,6 @@
+             try {
+                 fos = new FileOutputStream(sdPath);
+                 OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
+-                BufferedWriter bw = new BufferedWriter(osw);
+             } catch (IOException e) {
+             }
+         }

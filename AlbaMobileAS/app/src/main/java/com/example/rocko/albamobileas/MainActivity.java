@@ -143,7 +143,7 @@ public class MainActivity extends Activity implements SensorEventListener, View.
             BlueStatus.setText("failed");
             connectFlg = false;
         }
-        _blueThread = new Thread() {
+new Thread() {
             @Override
             public void run() {
                 while (_threadRunning) {
